@@ -1,0 +1,6 @@
+[submodule "lib/logging"]
+	path = lib/logging
+	url = https://github.com/mrRobot62/Arduino-logging-library.git
+[submodule "lib/EEPROMEx"]
+	path = lib/EEPROMEx
+	url = https://github.com/infomaniac50/EEPROMEx.git

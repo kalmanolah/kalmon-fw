@@ -1,16 +1,4 @@
-#include <avr/interrupt.h>
-#include <avr/power.h>
-#include <avr/sleep.h>
-#include <EEPROMex.h>
-
-// Configuration version, used for validating configuration integrity.
-#define CONFIG_VERSION "001"
-
-// Size of the configuration block memory pool.
-const int CONFIG_MEMORY_SIZE = 32;
-
-// EEPROM size. Bad things will happen if this isn't set correctly.
-const int CONFIG_EEPROM_SIZE = EEPROMSizeATmega328;
+#include "main.h"
 
 // Config memory address, used to determine where to read and write data.
 int config_address = 0;
@@ -20,20 +8,29 @@ struct ConfigurationStruct {
     // Character string indicating configuration version.
     char version[4];
 
+    // Boolean indicating whether debug mode is enabled.
+    bool debug;
+
     // Delay between loops, in milliseconds.
     int loop_delay;
 
-    // Serial input buffer size, in bytes.
-    int serial_input_buffer_size;
+    struct {
+        // Serial input buffer size, in bytes.
+        int input_buffer_size;
 
-    // Boolean indicating whether debug mode is enabled.
-    bool debug;
+        // Serial baud rate.
+        int baud_rate;
+    } serial;
 } config = {
     CONFIG_VERSION,
+    true,
     50,
-    32,
-    false
+    {
+        50,
+        9600
+    }
 };
+
 
 // Serial input structure.
 struct SerialInputStruct {
@@ -47,6 +44,7 @@ struct SerialInputStruct {
     ""
 };
 
+
 // Power button pin number.
 const int POWER_BTN = 2;
 
@@ -56,14 +54,9 @@ const int POWER_LED = 13;
 // Byte containing states/state history of the power button.
 byte POWER_BTN_STATES = B11111111;
 
-// Enum containing power states.
-enum PowerState {
-    SLEEPING,
-    AWAKE
-};
-
 // Current power state
-int POWER_STATE = AWAKE;
+int POWER_STATE = PowerState::AWAKE;
+
 
 /**
  * Constructor.
@@ -72,14 +65,17 @@ int POWER_STATE = AWAKE;
  */
 void setup()
 {
-    Serial.begin(9600);
-    while (!Serial) {} // Wait for serial port to be ready
+    // Initialize logging with default configuration to capture error output
+    initLogging();
 
     EEPROM.setMemPool(CONFIG_MEMORY_SIZE, CONFIG_EEPROM_SIZE);
     config_address = EEPROM.getAddress(sizeof(ConfigurationStruct));
     loadConfiguration();
 
-    serial_input.buffer.reserve(config.serial_input_buffer_size);
+    // Properly initialize logger this time
+    initLogging();
+
+    serial_input.buffer.reserve(config.serial.input_buffer_size);
 
     pinMode(POWER_BTN, INPUT);
     pinMode(POWER_LED, OUTPUT);
@@ -101,27 +97,42 @@ void loop()
 }
 
 /**
+ * Initialize the logger.
+ *
+ * @return void
+ */
+void initLogging()
+{
+    if (Serial) {
+        Serial.end();
+    }
+
+    Log.Init(config.debug ? LOG_LEVEL_DEBUG : LOG_LEVEL_INFOS,
+        config.serial.baud_rate);
+}
+
+/**
  * Load configuration from EEPROM into memory.
  *
  * @return void
  */
 void loadConfiguration() {
+    char stored[4];
+    int bytes;
+
+    Log.Debug("Loading config"CR);
+
     // Ensure the version string matches our version string; if it doesn't, we
     // should just use the default configuration
-    char stored_version[4];
-    EEPROM.readBlock(config_address, stored_version);
+    EEPROM.readBlock(config_address, stored);
+    Log.Debug("Found config, version=%s"CR, stored);
 
-    if (strcmp(stored_version, config.version) == 0) {
-        int bytes_read = EEPROM.readBlock(config_address, config);
-
-        Serial.print("Loaded configuration; version: ");
-        Serial.print(stored_version);
-        Serial.print("; bytes read: ");
-        Serial.println(bytes_read);
-    } else {
-        Serial.print("Not loading old configuration; version: ");
-        Serial.println(stored_version);
+    if (strcmp(stored, config.version) != 0) {
+        return;
     }
+
+    bytes = EEPROM.readBlock(config_address, config);
+    Log.Debug("Config loaded, version=%s, bytes=%d"CR, stored, bytes);
 }
 
 /**
@@ -131,14 +142,12 @@ void loadConfiguration() {
  * @return void
  */
 void saveConfiguration() {
-    Serial.println("Saving configuration");
+    int bytes;
 
-    int bytes_written = EEPROM.updateBlock(config_address, config);
+    Log.Debug("Saving config"CR);
 
-    Serial.print("Configuration saved; version: ");
-    Serial.print(config.version);
-    Serial.print("; bytes written: ");
-    Serial.println(bytes_written);
+    bytes = EEPROM.updateBlock(config_address, config);
+    Log.Debug("Config saved, version=%s, bytes=%d"CR, config.version, bytes);
 }
 
 /**
@@ -150,7 +159,7 @@ void saveConfiguration() {
 void determinePowerState() {
     // The button shouldn't do anything while we're sleeping, because the
     // interrupt which will wake the device is a much more low-level thing
-    if (POWER_STATE == SLEEPING) {
+    if (POWER_STATE == PowerState::ASLEEP) {
         return;
     }
 
@@ -158,7 +167,8 @@ void determinePowerState() {
     POWER_BTN_STATES |= digitalRead(POWER_BTN);
 
     if ((byte) (POWER_BTN_STATES << 6) == B10000000) {
-        POWER_STATE = POWER_STATE == AWAKE ? SLEEPING : AWAKE;
+        POWER_STATE = POWER_STATE == PowerState::AWAKE ?
+            PowerState::ASLEEP : PowerState::AWAKE;
     }
 }
 
@@ -170,7 +180,7 @@ void determinePowerState() {
  */
 void determineSleepState() {
     // If we're awake, we obviously don't want to sleep
-    if (POWER_STATE != SLEEPING) {
+    if (POWER_STATE != PowerState::ASLEEP) {
         return;
     }
 
@@ -184,12 +194,12 @@ void determineSleepState() {
  * @return void
  */
 void goToSleep() {
-    Serial.println("Entering sleep mode");
+    Log.Debug("Entering sleep mode"CR);
     delay(200);
 
     // Set the power state to asleep, since this function could've been called
     // using a serial command
-    POWER_STATE = SLEEPING;
+    POWER_STATE = PowerState::ASLEEP;
 
     digitalWrite(POWER_LED, LOW);
     set_sleep_mode(SLEEP_MODE_PWR_DOWN);
@@ -202,8 +212,8 @@ void goToSleep() {
     sleep_disable();
     digitalWrite(POWER_LED, HIGH);
 
-    POWER_STATE = AWAKE;
-    Serial.println("Exiting sleep mode");
+    POWER_STATE = PowerState::AWAKE;
+    Log.Debug("Exiting sleep mode"CR);
 }
 
 /**
@@ -244,17 +254,24 @@ void serialEvent() {
  * @return void
  */
 void handleSerialInput() {
-    Serial.print("Handling input: ");
-    Serial.println(serial_input.buffer);
+    char input[32];
+    bool handled = false;
 
-    if (serial_input.buffer == "sleep") {
-        goToSleep();
-    } else if (serial_input.buffer == "load") {
-        loadConfiguration();
-    } else if (serial_input.buffer == "save") {
-        saveConfiguration();
-    } else {
-        Serial.println("Invalid input");
+    serial_input.buffer.toCharArray(input, sizeof(input));
+    Log.Debug("Handling input: %s"CR, input);
+
+    if (serial_input.buffer.startsWith("cfg ")) {
+        if (serial_input.buffer.substring(4) == "save") {
+            handled = true;
+            saveConfiguration();
+        } else if (serial_input.buffer.substring(4) == "load") {
+            handled = true;
+            loadConfiguration();
+        }
+    }
+
+    if (!handled) {
+        Log.Error("Invalid input: %s"CR, input);
     }
 
     serial_input.buffer = "";
