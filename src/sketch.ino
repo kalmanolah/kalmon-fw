@@ -3,118 +3,66 @@
 #include <avr/sleep.h>
 #include <EEPROMex.h>
 
-/**
- * Configuration version, used for validating configuration integrity.
- * @type char*
- */
-const char* CONFIG_VERSION = "1";
+// Configuration version, used for validating configuration integrity.
+#define CONFIG_VERSION "001"
 
-/**
- * Size of the configuration block memory pool.
- * @type int
- */
+// Size of the configuration block memory pool.
 const int CONFIG_MEMORY_SIZE = 32;
 
-/**
- * EEPROM size. Bad things will happen if this isn't set correctly.
- * @type int
- */
+// EEPROM size. Bad things will happen if this isn't set correctly.
 const int CONFIG_EEPROM_SIZE = EEPROMSizeATmega328;
 
-/**
- * Configuration memory address, used to determine where to read and write
- * data.
- * @type int
- */
+// Config memory address, used to determine where to read and write data.
 int config_address = 0;
 
-/**
- * Configuration structure. Also contains the default configuration.
- */
+// Configuration structure. Also contains the default configuration.
 struct ConfigurationStruct {
-    /**
-     * Delay between loops, in milliseconds.
-     * @type int
-     */
+    // Character string indicating configuration version.
+    char version[4];
+
+    // Delay between loops, in milliseconds.
     int loop_delay;
 
-    /**
-     * Serial input buffer size, in bytes.
-     * @type int
-     */
+    // Serial input buffer size, in bytes.
     int serial_input_buffer_size;
 
-    /**
-     * Boolean indicating whether debug mode is enabled.
-     * @type bool
-     */
+    // Boolean indicating whether debug mode is enabled.
     bool debug;
-
-    /**
-     * Character string indicating configuration version.
-     * @type char[4]
-     */
-    char* version[4];
 } config = {
+    CONFIG_VERSION,
     50,
     32,
-    false,
-    (char*) CONFIG_VERSION
+    false
 };
 
-/**
- * Serial input structure.
- */
+// Serial input structure.
 struct SerialInputStruct {
-    /**
-     * Boolean indicating whether the input buffer is ready for processing.
-     * @type bool
-     */
+    // Boolean indicating whether the input buffer is ready for processing.
     bool ready;
 
-    /**
-     * Input buffer containing received serial data.
-     * @type String|char*
-     */
+    // Input buffer containing received serial data.
     String buffer;
 } serial_input = {
     false,
     ""
 };
 
-/**
- * Power button pin number.
- * @type int
- */
+// Power button pin number.
 const int POWER_BTN = 2;
 
-/**
- * Power LED pin number.
- * @type int
- */
+// Power LED pin number.
 const int POWER_LED = 13;
 
-/**
- * Byte containing states/state history of the power button.
- * @type byte
- */
+// Byte containing states/state history of the power button.
 byte POWER_BTN_STATES = B11111111;
 
-/**
- * Enum containing power states.
- * @type enum
- */
+// Enum containing power states.
 enum PowerState {
     SLEEPING,
     AWAKE
 };
 
-/**
- * Boolean indicating current power state.
- * 0 = sleeping / powered down
- * 1 = awake / fully powered
- * @type int
- */
+// Current power state
 int POWER_STATE = AWAKE;
 
 /**
@@ -146,7 +94,7 @@ void setup()
  */
 void loop()
 {
-    determinePowerState();
+    // determinePowerState();
     determineSleepState();
 
     delay(config.loop_delay);
@@ -160,14 +108,19 @@ void loop()
 void loadConfiguration() {
     // Ensure the version string matches our version string; if it doesn't, we
     // should just use the default configuration
-    if (EEPROM.readByte(config_address + sizeof(config) - 1) == *config.version[3]
-        && EEPROM.readByte(config_address + sizeof(config) - 2) == *config.version[2]
-        && EEPROM.readByte(config_address + sizeof(config) - 3) == *config.version[1]
-        && EEPROM.readByte(config_address + sizeof(config) - 4) == *config.version[0]) {
-        Serial.println("Configuration matched!");
-        EEPROM.readBlock(config_address, config);
+    char stored_version[4];
+    EEPROM.readBlock(config_address, stored_version);
+
+    if (strcmp(stored_version, config.version) == 0) {
+        int bytes_read = EEPROM.readBlock(config_address, config);
+
+        Serial.print("Loaded configuration; version: ");
+        Serial.print(stored_version);
+        Serial.print("; bytes read: ");
+        Serial.println(bytes_read);
     } else {
-        Serial.println("Configuration did not match!");
+        Serial.print("Not loading old configuration; version: ");
+        Serial.println(stored_version);
     }
 }
 
@@ -179,7 +132,13 @@ void loadConfiguration() {
  */
 void saveConfiguration() {
     Serial.println("Saving configuration");
-    Serial.println(EEPROM.updateBlock(config_address, config));
+
+    int bytes_written = EEPROM.updateBlock(config_address, config);
+
+    Serial.print("Configuration saved; version: ");
+    Serial.print(config.version);
+    Serial.print("; bytes written: ");
+    Serial.println(bytes_written);
 }
 
 /**
