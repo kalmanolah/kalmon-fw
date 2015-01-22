@@ -9,11 +9,16 @@ Currently implemented features:
 
 * Config loading/saving
 * Power saving/sleep mode
-* Serial command handling
+* Serial input handling
+* Command handler
 
 ## TODO
 
-Everything else.
+* Config value getting/setting
+* Input/output pin/type registering
+* Move serial stuff into separate file
+* Move power management stuff into separate file
+* Etc..
 
 ## License
 

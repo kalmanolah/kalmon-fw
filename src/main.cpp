@@ -1,36 +1,5 @@
 #include "main.h"
 
-// Config memory address, used to determine where to read and write data.
-int config_address = 0;
-
-// Configuration structure. Also contains the default configuration.
-struct ConfigurationStruct {
-    // Character string indicating configuration version.
-    char version[4];
-
-    // Boolean indicating whether debug mode is enabled.
-    bool debug;
-
-    // Delay between loops, in milliseconds.
-    int loop_delay;
-
-    struct {
-        // Serial input buffer size, in bytes.
-        int input_buffer_size;
-
-        // Serial baud rate.
-        int baud_rate;
-    } serial;
-} config = {
-    CONFIG_VERSION,
-    true,
-    50,
-    {
-        50,
-        9600
-    }
-};
-
 
 // Serial input structure.
 struct SerialInputStruct {
@@ -65,17 +34,16 @@ int POWER_STATE = PowerState::AWAKE;
  */
 void setup()
 {
-    // Initialize logging with default configuration to capture error output
+    // Initialize logging with default configuration to capture initial debug
+    // output
     initLogging();
 
-    EEPROM.setMemPool(CONFIG_MEMORY_SIZE, CONFIG_EEPROM_SIZE);
-    config_address = EEPROM.getAddress(sizeof(ConfigurationStruct));
-    loadConfiguration();
-
-    // Properly initialize logger this time
+    // Initialize all the things
+    initConfiguration();
     initLogging();
+    initCommands();
 
-    serial_input.buffer.reserve(config.serial.input_buffer_size);
+    serial_input.buffer.reserve(cfg.data.serial.input_buffer_size);
 
     pinMode(POWER_BTN, INPUT);
     pinMode(POWER_LED, OUTPUT);
@@ -93,7 +61,7 @@ void loop()
     // determinePowerState();
     determineSleepState();
 
-    delay(config.loop_delay);
+    delay(cfg.data.loop_delay);
 }
 
 /**
@@ -107,47 +75,63 @@ void initLogging()
         Serial.end();
     }
 
-    Log.Init(config.debug ? LOG_LEVEL_DEBUG : LOG_LEVEL_INFOS,
-        config.serial.baud_rate);
+    Log.Init(
+        cfg.data.debug ? LOG_LEVEL_DEBUG : LOG_LEVEL_INFOS,
+        cfg.data.serial.baud_rate
+    );
 }
 
 /**
- * Load configuration from EEPROM into memory.
+ * Initialize the configuration manager.
  *
  * @return void
  */
-void loadConfiguration() {
-    char stored[4];
-    int bytes;
-
-    Log.Debug("Loading config"CR);
-
-    // Ensure the version string matches our version string; if it doesn't, we
-    // should just use the default configuration
-    EEPROM.readBlock(config_address, stored);
-    Log.Debug("Found config, version=%s"CR, stored);
-
-    if (strcmp(stored, config.version) != 0) {
-        return;
-    }
-
-    bytes = EEPROM.readBlock(config_address, config);
-    Log.Debug("Config loaded, version=%s, bytes=%d"CR, stored, bytes);
+void initConfiguration()
+{
+    cfg = ConfigurationManager();
+    cfg.load();
 }
 
 /**
- * Save the current configuration by writing the updated data in memory to
- * EEPROM.
+ * Load configuration.
+ *
+ * This is a wrapper function created because dealing with a
+ * pointer-to-function is a hell of a lot easier than dealing with a
+ * pointer-to-instance-method.
+ *
+ * @return void.
+ */
+void loadConfiguration(char* args)
+{
+    cfg.load();
+}
+
+/**
+ * Save configuration.
+ *
+ * This is a wrapper function created because dealing with a
+ * pointer-to-function is a hell of a lot easier than dealing with a
+ * pointer-to-instance-method.
+ *
+ * @return void.
+ */
+void saveConfiguration(char* args)
+{
+    cfg.save();
+}
+
+/**
+ * Initialize the command manager.
  *
  * @return void
  */
-void saveConfiguration() {
-    int bytes;
+void initCommands()
+{
+    cmd = CommandManager();
 
-    Log.Debug("Saving config"CR);
-
-    bytes = EEPROM.updateBlock(config_address, config);
-    Log.Debug("Config saved, version=%s, bytes=%d"CR, config.version, bytes);
+    // Register command handlers
+    cmd.register_handler("cfg_load", loadConfiguration);
+    cmd.register_handler("cfg_save", saveConfiguration);
 }
 
 /**
@@ -194,7 +178,7 @@ void determineSleepState() {
  * @return void
  */
 void goToSleep() {
-    Log.Debug("Entering sleep mode"CR);
+    Log.Debug("pwr: sleeping"CR);
     delay(200);
 
     // Set the power state to asleep, since this function could've been called
@@ -213,7 +197,7 @@ void goToSleep() {
     digitalWrite(POWER_LED, HIGH);
 
     POWER_STATE = PowerState::AWAKE;
-    Log.Debug("Exiting sleep mode"CR);
+    Log.Debug("pwr: awake"CR);
 }
 
 /**
@@ -222,6 +206,7 @@ void goToSleep() {
  * @return void
  */
 void wakeUp() {
+    Log.Debug("pwd: waking"CR);
 }
 
 /**
@@ -232,11 +217,15 @@ void wakeUp() {
  * @return void
  */
 void serialEvent() {
-    while (Serial.available()) {
-        char ch = (char) Serial.read();
+    char ch;
 
+    while (Serial.available()) {
+        ch = (char) Serial.read();
+
+        // If we receive a newline, break the loop
         if (ch == '\n' || ch == '\r') {
-            serial_input.ready = true;
+            // Try to handle a command if our buffer isn't empty
+            serial_input.ready = serial_input.buffer.length() > 0;
             break;
         }
 
@@ -249,29 +238,33 @@ void serialEvent() {
 }
 
 /**
- * Handle a received command and clear the buffer afterwards.
+ * Handle serial input when it is ready for processing.
  *
  * @return void
  */
 void handleSerialInput() {
-    char input[32];
-    bool handled = false;
+    uint8_t space_index;
+    char command[CommandManager::MAX_COMMAND_LENGTH];
+    char arguments[CommandManager::MAX_ARGUMENTS_LENGTH];
 
-    serial_input.buffer.toCharArray(input, sizeof(input));
-    Log.Debug("Handling input: %s"CR, input);
+    // Try to find the index of the first space
+    // If no space was found, we set the index to the length of the string - 1
+    space_index = serial_input.buffer.indexOf(' ');
 
-    if (serial_input.buffer.startsWith("cfg ")) {
-        if (serial_input.buffer.substring(4) == "save") {
-            handled = true;
-            saveConfiguration();
-        } else if (serial_input.buffer.substring(4) == "load") {
-            handled = true;
-            loadConfiguration();
-        }
+    if (space_index == -1) {
+        space_index = serial_input.buffer.length() - 1;
     }
 
-    if (!handled) {
-        Log.Error("Invalid input: %s"CR, input);
+    // Pass our command handler everything up to the first space converted to
+    // int (command identifier) along with everything after the first space as
+    // args
+    serial_input.buffer.substring(0, space_index).toCharArray(command, sizeof(command));
+    serial_input.buffer.substring(space_index + 1).toCharArray(arguments, sizeof(arguments));
+
+    Log.Debug("cmd: \"%s\"; args: \"%s\""CR, command, arguments);
+
+    if (!cmd.handle_command(command, arguments)) {
+        Log.Error("cmd: invalid"CR);
     }
 
     serial_input.buffer = "";
