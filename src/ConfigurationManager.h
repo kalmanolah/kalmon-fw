@@ -3,7 +3,7 @@
 #include <Logging.h>
 
 // Configuration version to determine data integrity.
-#define CONFIG_VERSION "000"
+#define CONFIG_VERSION "001"
 
 // Size of the configuration block memory pool.
 #define CONFIG_MEMORY_SIZE 32
@@ -19,11 +19,11 @@ class ConfigurationManager {
         struct Configuration {
             char version[4];
             bool debug;
-            uint8_t loop_delay;
+            uint16_t loop_delay;
 
             struct {
                 uint8_t input_buffer_size;
-                uint16_t baud_rate;
+                uint32_t baud_rate;
             } serial;
         } DEFAULT_CONFIGURATION = {
             CONFIG_VERSION,
