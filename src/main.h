@@ -27,3 +27,6 @@ void determineSleepState();
 void goToSleep();
 void wakeUp();
 void handleSerialInput();
+
+int getFreeMemory();
+void printStats(char* = NULL);

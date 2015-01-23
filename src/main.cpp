@@ -102,6 +102,7 @@ void initCommands()
     // Register command handlers
     cmd::register_handler("cfg_load", cfg::load);
     cmd::register_handler("cfg_save", cfg::save);
+    cmd::register_handler("stats", printStats);
 }
 
 /**
@@ -239,4 +240,24 @@ void handleSerialInput() {
 
     serial_input.buffer = "";
     serial_input.ready = false;
+}
+
+/**
+ * Returns the amount of free memory in bytes.
+ *
+ * @return int
+ */
+int getFreeMemory() {
+  extern int __heap_start, *__brkval;
+  int v;
+  return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval);
+}
+
+/**
+ * Prints stats.
+ *
+ * @return void
+ */
+void printStats(char* args) {
+    Log.Debug("ram: %d/2048"CR, getFreeMemory());
 }
