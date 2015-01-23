@@ -7,8 +7,8 @@ class CommandManager {
 
         typedef void (*Callback)(char*);
 
-        void register_handler(char*, Callback);
-        bool handle_command(char*, char*);
+        static void register_handler(char*, Callback);
+        static bool handle_command(char*, char*);
 
     private:
         struct CommandHandler {
@@ -16,6 +16,6 @@ class CommandManager {
             Callback callback;
         };
 
-        uint8_t handler_count = 0;
-        CommandHandler handlers[8] = {};
+        static uint8_t handler_count;
+        static CommandHandler handlers[8];
 };

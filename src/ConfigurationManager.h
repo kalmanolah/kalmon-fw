@@ -14,7 +14,7 @@
 class ConfigurationManager {
     private:
         // Config memory address, used to determine where to read and write data.
-        int configuration_address = 0;
+        static int configuration_address;
 
         struct Configuration {
             char version[4];
@@ -25,20 +25,12 @@ class ConfigurationManager {
                 uint8_t input_buffer_size;
                 uint32_t baud_rate;
             } serial;
-        } DEFAULT_CONFIGURATION = {
-            CONFIG_VERSION,
-            true,
-            50,
-            {
-                50,
-                9600
-            }
         };
 
     public:
-        Configuration data = DEFAULT_CONFIGURATION;
+        static Configuration data;
 
-        ConfigurationManager();
-        void load(char* = 0);
-        void save(char* = 0);
+        static void initialize();
+        static void load(char* = 0);
+        static void save(char* = 0);
 };

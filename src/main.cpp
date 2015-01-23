@@ -43,7 +43,7 @@ void setup()
     initLogging();
     initCommands();
 
-    serial_input.buffer.reserve(cfg.data.serial.input_buffer_size);
+    serial_input.buffer.reserve(cfg::data.serial.input_buffer_size);
 
     pinMode(POWER_BTN, INPUT);
     pinMode(POWER_LED, OUTPUT);
@@ -61,7 +61,7 @@ void loop()
     // determinePowerState();
     determineSleepState();
 
-    delay(cfg.data.loop_delay);
+    delay(cfg::data.loop_delay);
 }
 
 /**
@@ -76,8 +76,8 @@ void initLogging()
     }
 
     Log.Init(
-        cfg.data.debug ? LOG_LEVEL_DEBUG : LOG_LEVEL_INFOS,
-        cfg.data.serial.baud_rate
+        cfg::data.debug ? LOG_LEVEL_DEBUG : LOG_LEVEL_INFOS,
+        cfg::data.serial.baud_rate
     );
 }
 
@@ -88,36 +88,8 @@ void initLogging()
  */
 void initConfiguration()
 {
-    cfg = ConfigurationManager();
-    cfg.load();
-}
-
-/**
- * Load configuration.
- *
- * This is a wrapper function created because dealing with a
- * pointer-to-function is a hell of a lot easier than dealing with a
- * pointer-to-instance-method.
- *
- * @return void.
- */
-void loadConfiguration(char* args)
-{
-    cfg.load();
-}
-
-/**
- * Save configuration.
- *
- * This is a wrapper function created because dealing with a
- * pointer-to-function is a hell of a lot easier than dealing with a
- * pointer-to-instance-method.
- *
- * @return void.
- */
-void saveConfiguration(char* args)
-{
-    cfg.save();
+    cfg::initialize();
+    cfg::load();
 }
 
 /**
@@ -127,11 +99,9 @@ void saveConfiguration(char* args)
  */
 void initCommands()
 {
-    cmd = CommandManager();
-
     // Register command handlers
-    cmd.register_handler("cfg_load", loadConfiguration);
-    cmd.register_handler("cfg_save", saveConfiguration);
+    cmd::register_handler("cfg_load", cfg::load);
+    cmd::register_handler("cfg_save", cfg::save);
 }
 
 /**
@@ -263,7 +233,7 @@ void handleSerialInput() {
 
     Log.Debug("cmd: \"%s\"; args: \"%s\""CR, command, arguments);
 
-    if (!cmd.handle_command(command, arguments)) {
+    if (!cmd::handle_command(command, arguments)) {
         Log.Error("cmd: invalid"CR);
     }
 

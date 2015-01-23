@@ -1,5 +1,11 @@
 #include "CommandManager.h"
 
+// Handler count.
+uint8_t CommandManager::handler_count = 0;
+
+// Handler array.
+CommandManager::CommandHandler CommandManager::handlers[8] = {};
+
 /**
  * Register a handler for a command.
  *
