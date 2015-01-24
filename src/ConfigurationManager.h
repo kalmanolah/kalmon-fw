@@ -31,6 +31,6 @@ class ConfigurationManager {
         static Configuration data;
 
         static void initialize();
-        static void load(char* = 0);
-        static void save(char* = 0);
+        static void load(char* = NULL);
+        static void save(char* = NULL);
 };
