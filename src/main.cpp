@@ -43,8 +43,6 @@ void setup()
     initLogging();
     initCommands();
 
-    serial_input.buffer.reserve(cfg::data.serial.input_buffer_size);
-
     pinMode(POWER_BTN, INPUT);
     pinMode(POWER_LED, OUTPUT);
 
@@ -200,7 +198,9 @@ void serialEvent() {
             break;
         }
 
-        serial_input.buffer += ch;
+        if (serial_input.buffer.length() < cfg::data.serial.input_buffer_size) {
+            serial_input.buffer += ch;
+        }
     }
 
     if (serial_input.ready) {
@@ -215,8 +215,8 @@ void serialEvent() {
  */
 void handleSerialInput() {
     uint8_t space_index;
-    char command[CommandManager::MAX_COMMAND_LENGTH];
-    char arguments[CommandManager::MAX_ARGUMENTS_LENGTH];
+    char command[CommandManager::MAX_COMMAND_SIZE];
+    char arguments[cfg::data.serial.input_buffer_size - CommandManager::MAX_COMMAND_SIZE - 1];
 
     // Try to find the index of the first space
     // If no space was found, we set the index to the length of the string - 1

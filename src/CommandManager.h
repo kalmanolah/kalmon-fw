@@ -2,8 +2,7 @@
 
 class CommandManager {
     public:
-        const static uint8_t MAX_COMMAND_LENGTH = 16;
-        const static uint8_t MAX_ARGUMENTS_LENGTH = 32;
+        const static uint8_t MAX_COMMAND_SIZE = 9;
 
         typedef void (*Callback)(char*);
 
@@ -12,7 +11,7 @@ class CommandManager {
 
     private:
         struct CommandHandler {
-            char command[MAX_COMMAND_LENGTH];
+            char command[MAX_COMMAND_SIZE];
             Callback callback;
         };
 

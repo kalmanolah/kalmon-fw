@@ -9,7 +9,7 @@ ConfigurationManager::Configuration ConfigurationManager::data = {
     true,
     50,
     {
-        50,
+        32,
         9600
     }
 };

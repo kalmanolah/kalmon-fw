@@ -3,7 +3,7 @@
 #include <Logging.h>
 
 // Configuration version to determine data integrity.
-#define CONFIG_VERSION "001"
+#define CONFIG_VERSION "000"
 
 // Size of the configuration block memory pool.
 #define CONFIG_MEMORY_SIZE 32
