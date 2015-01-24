@@ -36,14 +36,14 @@ void ConfigurationManager::load(char* arguments) {
     // Ensure the version string matches our version string; if it doesn't, we
     // should just use the default configuration
     EEPROM.readBlock(configuration_address, stored);
-    Log.Debug("cfg: found; v=%s"CR, stored);
+    Log.Debug(F("cfg: found; v=%s"CR), stored);
 
     if (strcmp(stored, data.version) != 0) {
         return;
     }
 
     bytes = EEPROM.readBlock(configuration_address, data);
-    Log.Debug("cfg: loaded; v=%s, b=%d"CR, stored, bytes);
+    Log.Debug(F("cfg: loaded; v=%s, b=%d"CR), stored, bytes);
 }
 
 /**
@@ -56,5 +56,5 @@ void ConfigurationManager::save(char* arguments) {
     uint8_t bytes;
 
     bytes = EEPROM.updateBlock(configuration_address, data);
-    Log.Debug("cfg: saved; v=%s, b=%d"CR, data.version, bytes);
+    Log.Debug(F("cfg: saved; v=%s, b=%d"CR), data.version, bytes);
 }

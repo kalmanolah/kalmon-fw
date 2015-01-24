@@ -147,7 +147,7 @@ void determineSleepState() {
  * @return void
  */
 void goToSleep() {
-    Log.Debug("pwr: sleeping"CR);
+    Log.Debug(F("pwr: sleeping"CR));
     delay(200);
 
     // Set the power state to asleep, since this function could've been called
@@ -166,7 +166,7 @@ void goToSleep() {
     digitalWrite(POWER_LED, HIGH);
 
     POWER_STATE = PowerState::AWAKE;
-    Log.Debug("pwr: awake"CR);
+    Log.Debug(F("pwr: awake"CR));
 }
 
 /**
@@ -175,7 +175,7 @@ void goToSleep() {
  * @return void
  */
 void wakeUp() {
-    Log.Debug("pwd: waking"CR);
+    Log.Debug(F("pwd: waking"CR));
 }
 
 /**
@@ -232,10 +232,10 @@ void handleSerialInput() {
     serial_input.buffer.substring(0, space_index).toCharArray(command, sizeof(command));
     serial_input.buffer.substring(space_index + 1).toCharArray(arguments, sizeof(arguments));
 
-    Log.Debug("cmd: \"%s\"; args: \"%s\""CR, command, arguments);
+    Log.Debug(F("cmd: \"%s\"; args: \"%s\""CR), command, arguments);
 
     if (!cmd::handle_command(command, arguments)) {
-        Log.Error("cmd: invalid"CR);
+        Log.Error(F("cmd: invalid"CR));
     }
 
     serial_input.buffer = "";
@@ -248,9 +248,9 @@ void handleSerialInput() {
  * @return int
  */
 int getFreeMemory() {
-  extern int __heap_start, *__brkval;
-  int v;
-  return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval);
+    extern int __heap_start, *__brkval;
+    int v;
+    return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval);
 }
 
 /**
@@ -259,5 +259,5 @@ int getFreeMemory() {
  * @return void
  */
 void printStats(char* args) {
-    Log.Debug("ram: %d/2048"CR, getFreeMemory());
+    Log.Debug(F("ram: %d/2048"CR), getFreeMemory());
 }
