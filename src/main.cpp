@@ -101,6 +101,7 @@ void initCommands()
     cmd::register_handler("cfg_load", cfg::load);
     cmd::register_handler("cfg_save", cfg::save);
     cmd::register_handler("stats", printStats);
+    cmd::register_handler("reset", performReset);
 }
 
 /**
@@ -259,5 +260,17 @@ int getFreeMemory() {
  * @return void
  */
 void printStats(char* args) {
-    Log.Debug(F("ram: %d/2048"CR), getFreeMemory());
+    Log.Debug(F("free: b=%d"CR), getFreeMemory());
+}
+
+/**
+ * Performs a soft reset.
+ *
+ * @return void
+ */
+void performReset(char* args) {
+    Log.Debug(F("reset"CR));
+    delay(200);
+
+    asm volatile("  jmp 0");
 }

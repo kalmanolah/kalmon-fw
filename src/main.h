@@ -29,4 +29,6 @@ void wakeUp();
 void handleSerialInput();
 
 int getFreeMemory();
+
 void printStats(char* = NULL);
+void performReset(char* = NULL);
