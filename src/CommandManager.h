@@ -1,5 +1,7 @@
 #include "ArduinoHeader.h"
 
+#define COMMAND_AVAILABLE_SLOTS 8
+
 class CommandManager {
     public:
         const static uint8_t MAX_COMMAND_SIZE = 9;
@@ -16,5 +18,5 @@ class CommandManager {
         };
 
         static uint8_t handler_count;
-        static CommandHandler handlers[8];
+        static CommandHandler handlers[COMMAND_AVAILABLE_SLOTS];
 };

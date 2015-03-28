@@ -36,6 +36,7 @@ static HCSR04 hcsr04_sensor(4, 6);
 void initLogging();
 void initCommands();
 void initConfiguration();
+void initPower();
 
 void handlePowerState();
 void handleSerialInput();
@@ -45,3 +46,8 @@ int getFreeMemory();
 
 void printStats(char* = NULL);
 void performReset(char* = NULL);
+
+void loadConfiguration(char* = NULL);
+void saveConfiguration(char* = NULL);
+void getConfigurationValue(char* args);
+void setConfigurationValue(char* args);

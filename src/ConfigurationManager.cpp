@@ -32,7 +32,7 @@ void ConfigurationManager::initialize() {
  *
  * @return void
  */
-void ConfigurationManager::load(char* arguments) {
+void ConfigurationManager::load() {
     char stored[4];
     uint8_t bytes;
 
@@ -46,7 +46,7 @@ void ConfigurationManager::load(char* arguments) {
     }
 
     bytes = EEPROM.readBlock(configuration_address, data);
-    Log.Debug(F("cfg: loaded; v=%s, b=%d"CR), stored, bytes);
+    Log.Debug(F("cfg: loaded; v=%s, B=%d"CR), stored, bytes);
 }
 
 /**
@@ -55,11 +55,11 @@ void ConfigurationManager::load(char* arguments) {
  *
  * @return void
  */
-void ConfigurationManager::save(char* arguments) {
+void ConfigurationManager::save() {
     uint8_t bytes;
 
     bytes = EEPROM.updateBlock(configuration_address, data);
-    Log.Debug(F("cfg: saved; v=%s, b=%d"CR), data.version, bytes);
+    Log.Debug(F("cfg: saved; v=%s, B=%d"CR), data.version, bytes);
 }
 
 /**
@@ -69,4 +69,8 @@ void ConfigurationManager::save(char* arguments) {
  */
 uint16_t ConfigurationManager::get(uint8_t key) {
     return data.data[key];
+}
+
+void ConfigurationManager::set(uint8_t key, uint16_t value) {
+    data.data[key] = value;
 }

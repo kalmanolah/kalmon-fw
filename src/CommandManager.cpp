@@ -4,7 +4,7 @@
 uint8_t CommandManager::handler_count = 0;
 
 // Handler array.
-CommandManager::CommandHandler CommandManager::handlers[8] = {};
+CommandManager::CommandHandler CommandManager::handlers[COMMAND_AVAILABLE_SLOTS] = {};
 
 /**
  * Register a handler for a command.

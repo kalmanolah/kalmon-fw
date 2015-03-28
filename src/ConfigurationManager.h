@@ -11,6 +11,9 @@
 // EEPROM size. Bad things will happen if this isn't set correctly.
 #define CONFIG_EEPROM_SIZE EEPROMSizeATmega328
 
+// Amount of available configuration options.
+#define CONFIG_AVAILABLE_SLOTS 32
+
 // Configuration options
 #define CFG_DEBUG 0
 #define CFG_LOOP_DELAY 1
@@ -27,7 +30,7 @@ class ConfigurationManager {
 
         struct Configuration {
             char version[4];
-            uint16_t data[32];
+            uint16_t data[CONFIG_AVAILABLE_SLOTS];
         };
 
     public:
@@ -35,9 +38,9 @@ class ConfigurationManager {
 
         static void initialize();
 
-        static void load(char* = NULL);
-        static void save(char* = NULL);
+        static void load();
+        static void save();
 
         static uint16_t get(uint8_t key);
-        static void set(uint8_t key, char* value);
+        static void set(uint8_t key, uint16_t value);
 };

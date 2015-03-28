@@ -28,6 +28,7 @@ void setup()
     initConfiguration();
     initLogging();
     initCommands();
+    initPower();
 
     pinMode(POWER_LED, OUTPUT);
     digitalWrite(POWER_LED, HIGH);
@@ -82,10 +83,22 @@ void initConfiguration()
 void initCommands()
 {
     // Register command handlers
-    cmd::register_handler("cfg_load", cfg::load);
-    cmd::register_handler("cfg_save", cfg::save);
+    cmd::register_handler("cfg_load", loadConfiguration);
+    cmd::register_handler("cfg_save", saveConfiguration);
+    cmd::register_handler("cfg_get", getConfigurationValue);
+    cmd::register_handler("cfg_set", setConfigurationValue);
     cmd::register_handler("stats", printStats);
     cmd::register_handler("reset", performReset);
+}
+
+/**
+ * Initialize power management.
+ *
+ * @return void
+ */
+void initPower()
+{
+    sleeper.setCalibrationInterval(5);
 }
 
 /**
@@ -110,7 +123,7 @@ void handlePowerState() {
         digitalWrite(POWER_LED, LOW);
 
         sleeper.pwrDownMode();
-        sleeper.sleepDelay(cfg::get(CFG_POWER_SLEEP_DURATION) * 1000);
+        sleeper.sleepDelay((uint32_t) cfg::get(CFG_POWER_SLEEP_DURATION) * 1000);
 
         digitalWrite(POWER_LED, HIGH);
 
@@ -185,6 +198,47 @@ void handleSerialInput() {
 }
 
 /**
+ * Handle sensor updates.
+ *
+ * @return void
+ */
+void handleSensorUpdates() {
+    if (cfg::get(CFG_SENSOR_UPDATE_INTERVAL) > 0
+        && (sensor_update_elapsed / 1000) >= cfg::get(CFG_SENSOR_UPDATE_INTERVAL)) {
+        Log.Debug(F("updating sensors"CR));
+
+        switch (dht11_sensor.read()) {
+            case Dht11::OK:
+                Log.Debug(F("humidity: %d%%"CR), dht11_sensor.getHumidity());
+                Log.Debug(F("temperature: %d°C"CR), dht11_sensor.getTemperature());
+                break;
+
+            case Dht11::ERROR_CHECKSUM:
+                Log.Error(F("dht11: checksum error"CR));
+                break;
+
+            case Dht11::ERROR_TIMEOUT:
+                Log.Error(F("dht11: timeout error"CR));
+                break;
+
+            default:
+                Log.Error(F("dht11: unknown error"CR));
+                break;
+
+            // default:
+            //     Log.Error(F("dht11: error"CR));
+            //     break;
+        }
+
+        hcsr04_sensor.read();
+        Log.Debug(F("duration: %lμs"CR), hcsr04_sensor.getDuration());
+        Log.Debug(F("distance: %lcm"CR), hcsr04_sensor.getDistance());
+
+        sensor_update_elapsed = 0;
+    }
+}
+
+/**
  * Returns the amount of free memory in bytes.
  *
  * @return int
@@ -201,7 +255,7 @@ int getFreeMemory() {
  * @return void
  */
 void printStats(char* args) {
-    Log.Debug(F("free: b=%d"CR), getFreeMemory());
+    Log.Info(F("free: %dB"CR), getFreeMemory());
 }
 
 /**
@@ -210,49 +264,81 @@ void printStats(char* args) {
  * @return void
  */
 void performReset(char* args) {
-    Log.Debug(F("reset"CR));
+    Log.Info(F("reset"CR));
     delay(200);
 
     asm volatile("  jmp 0");
 }
 
 /**
- * Handle sensor updates.
+ * Load configuration.
  *
  * @return void
  */
-void handleSensorUpdates() {
-    if (cfg::get(CFG_SENSOR_UPDATE_INTERVAL) > 0
-        && (sensor_update_elapsed / 1000) >= cfg::get(CFG_SENSOR_UPDATE_INTERVAL)) {
-        Log.Debug(F("updating sensors"CR));
+void loadConfiguration(char* args) {
+    cfg::load();
+}
 
-        switch (dht11_sensor.read()) {
-            case Dht11::OK:
-                Log.Debug(F("humidity: %d%%"CR), dht11_sensor.getHumidity());
-                Log.Debug(F("temperature: %d°C"CR), dht11_sensor.getTemperature());
-                break;
+/**
+ * Save configuration.
+ *
+ * @return void
+ */
+void saveConfiguration(char* args) {
+    cfg::save();
+}
 
-            // case Dht11::ERROR_CHECKSUM:
-            //     Log.Error(F("dht11: checksum error"CR));
-            //     break;
+/**
+ * Retrieve and print a configuration value.
+ *
+ * @return void
+ */
+void getConfigurationValue(char* args) {
+    uint8_t key;
+    char* errstr;
 
-            // case Dht11::ERROR_TIMEOUT:
-            //     Log.Error(F("dht11: timeout error"CR));
-            //     break;
+    key = strtol(args, &errstr, 10);
 
-            // default:
-            //     Log.Error(F("dht11: unknown error"CR));
-            //     break;
+    if (key >= CONFIG_AVAILABLE_SLOTS) {
+        Log.Error(F("cfg: key out of bounds; max=%d"CR), CONFIG_AVAILABLE_SLOTS - 1);
+    } else if (*errstr) {
+        Log.Error(F("cfg: error converting key; part=%s"CR), errstr);
+    } else {
+        Log.Info(F("cfg: %s=%d"CR), args, cfg::get(key));
+    }
+}
 
-            default:
-                Log.Error(F("dht11: error"CR));
-                break;
+/**
+ * Set a configuration value.
+ *
+ * @return void
+ */
+void setConfigurationValue(char* args) {
+    uint8_t key;
+    uint16_t value;
+    char* errstr;
+    char* key_tok;
+    char* value_tok;
+
+    key_tok = strtok(args, " ");
+    value_tok = strtok(NULL, " ");
+
+    if (*key_tok && *value_tok) {
+        key = strtol(key_tok, &errstr, 10);
+
+        if (key >= CONFIG_AVAILABLE_SLOTS) {
+            Log.Error(F("cfg: key out of bounds; max=%d"CR), CONFIG_AVAILABLE_SLOTS - 1);
+        } else if (*errstr) {
+            Log.Error(F("cfg: error converting key; part=%s"CR), errstr);
+        } else {
+            value = strtol(value_tok, &errstr, 10);
+
+            if (*errstr) {
+                Log.Error(F("cfg: error converting value; part=%s"CR), errstr);
+            } else {
+                cfg::set(key, value);
+                Log.Info(F("cfg: %d=%d"CR), key, value);
+            }
         }
-
-        hcsr04_sensor.read();
-        Log.Debug(F("duration: %lμs"CR), hcsr04_sensor.getDuration());
-        Log.Debug(F("distance: %lcm"CR), hcsr04_sensor.getDistance());
-
-        sensor_update_elapsed = 0;
     }
 }

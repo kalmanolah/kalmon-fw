@@ -7,14 +7,15 @@ Firmware for a modular, configurable Arduino sensor hub
 
 Currently implemented features:
 
-* Config loading/saving
-* Power saving/sleep mode
+* Config loading/saving/setting/getting
+* Power saving/sleep mode with alternating wake/sleep periods
 * Serial input handling
-* Command handler
+* Command handler with callback registration
+* Decent logging output
+* Static support for sonar and temp/humidity sensor
 
 ## TODO
 
-* Config value getting/setting
 * Input/output pin/type registering
 * Move serial stuff into separate file
 * Move power management stuff into separate file
