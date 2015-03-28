@@ -23,11 +23,6 @@ namespace PowerState {
     enum PowerState { ASLEEP, AWAKE };
 }
 
-static struct {
-    uint16_t awake = 30;
-    uint16_t asleep = 15;
-} power_state_seconds;
-
 static Sleep sleeper;
 
 static uint8_t current_power_state = PowerState::AWAKE;

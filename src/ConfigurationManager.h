@@ -3,7 +3,7 @@
 #include <Logging.h>
 
 // Configuration version to determine data integrity.
-#define CONFIG_VERSION "000"
+#define CONFIG_VERSION "001"
 
 // Size of the configuration block memory pool.
 #define CONFIG_MEMORY_SIZE 32
@@ -27,8 +27,13 @@ class ConfigurationManager {
             } serial;
 
             struct {
-                uint32_t update_interval;
+                uint16_t update_interval;
             } sensors;
+
+            struct {
+                uint16_t wake_duration;
+                uint16_t sleep_duration;
+            } power;
         };
 
     public:

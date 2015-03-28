@@ -96,7 +96,10 @@ void initCommands()
  */
 void handlePowerState() {
     // If we have a waking period and it has expired, go to sleep
-    if (current_power_state == PowerState::AWAKE && ((power_state_elapsed / 1000) >= power_state_seconds.awake)) {
+    if (current_power_state == PowerState::AWAKE
+        && cfg::data.power.wake_duration > 0
+        && cfg::data.power.sleep_duration > 0
+        && (power_state_elapsed / 1000) >= cfg::data.power.wake_duration) {
         Log.Debug(F("pwr: sleeping"CR));
         delay(200);
 
@@ -107,7 +110,7 @@ void handlePowerState() {
         digitalWrite(POWER_LED, LOW);
 
         sleeper.pwrDownMode();
-        sleeper.sleepDelay(power_state_seconds.asleep * 1000);
+        sleeper.sleepDelay(cfg::data.power.sleep_duration * 1000);
 
         digitalWrite(POWER_LED, HIGH);
 
@@ -219,7 +222,8 @@ void performReset(char* args) {
  * @return void
  */
 void handleSensorUpdates() {
-    if (sensor_update_elapsed >= cfg::data.sensors.update_interval == true) {
+    if (cfg::data.sensors.update_interval > 0
+        && (sensor_update_elapsed / 1000) >= cfg::data.sensors.update_interval) {
         Log.Debug(F("updating sensors"CR));
 
         switch (dht11_sensor.read()) {
