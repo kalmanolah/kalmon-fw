@@ -25,6 +25,10 @@ class ConfigurationManager {
                 uint8_t input_buffer_size;
                 uint32_t baud_rate;
             } serial;
+
+            struct {
+                uint32_t update_interval;
+            } sensors;
         };
 
     public:

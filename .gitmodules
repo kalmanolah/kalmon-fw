@@ -4,3 +4,12 @@
 [submodule "lib/logging"]
 	path = lib/logging
 	url = https://github.com/NOX73/Arduino-logging-library.git
+[submodule "adalton_libs"]
+	path = adalton_libs
+	url = https://github.com/adalton/arduino.git
+[submodule "lib/elapsedMillis"]
+	path = lib/elapsedMillis
+	url = https://github.com/pfeerick/elapsedMillis.git
+[submodule "lib/Sleep_n0m1"]
+	path = lib/Sleep_n0m1
+	url = https://github.com/n0m1/Sleep_n0m1.git

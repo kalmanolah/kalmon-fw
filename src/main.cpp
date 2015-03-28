@@ -14,19 +14,6 @@ struct SerialInputStruct {
 };
 
 
-// Power button pin number.
-const int POWER_BTN = 2;
-
-// Power LED pin number.
-const int POWER_LED = 13;
-
-// Byte containing states/state history of the power button.
-byte POWER_BTN_STATES = B11111111;
-
-// Current power state
-int POWER_STATE = PowerState::AWAKE;
-
-
 /**
  * Constructor.
  *
@@ -34,8 +21,7 @@ int POWER_STATE = PowerState::AWAKE;
  */
 void setup()
 {
-    // Initialize logging with default configuration to capture initial debug
-    // output
+    // Initialize logging with default configuration to capture initial debug output
     initLogging();
 
     // Initialize all the things
@@ -43,9 +29,7 @@ void setup()
     initLogging();
     initCommands();
 
-    pinMode(POWER_BTN, INPUT);
     pinMode(POWER_LED, OUTPUT);
-
     digitalWrite(POWER_LED, HIGH);
 }
 
@@ -56,8 +40,8 @@ void setup()
  */
 void loop()
 {
-    // determinePowerState();
-    determineSleepState();
+    handlePowerState();
+    handleSensorUpdates();
 
     delay(cfg::data.loop_delay);
 }
@@ -105,78 +89,32 @@ void initCommands()
 }
 
 /**
- * Determine whether or not the power button has been pressed. if so, toggle
- * the power state.
- *
- * @return void
- */
-void determinePowerState() {
-    // The button shouldn't do anything while we're sleeping, because the
-    // interrupt which will wake the device is a much more low-level thing
-    if (POWER_STATE == PowerState::ASLEEP) {
-        return;
-    }
-
-    POWER_BTN_STATES <<= 1;
-    POWER_BTN_STATES |= digitalRead(POWER_BTN);
-
-    if ((byte) (POWER_BTN_STATES << 6) == B10000000) {
-        POWER_STATE = POWER_STATE == PowerState::AWAKE ?
-            PowerState::ASLEEP : PowerState::AWAKE;
-    }
-}
-
-/**
  * Determine whether or not sleeping is necessary and if so, initiate the sleep
  * sequence.
  *
  * @return void
  */
-void determineSleepState() {
-    // If we're awake, we obviously don't want to sleep
-    if (POWER_STATE != PowerState::ASLEEP) {
-        return;
+void handlePowerState() {
+    // If we have a waking period and it has expired, go to sleep
+    if (current_power_state == PowerState::AWAKE && ((power_state_elapsed / 1000) >= power_state_seconds.awake)) {
+        Log.Debug(F("pwr: sleeping"CR));
+        delay(200);
+
+        // Set the power state to asleep, since this function could've been called
+        // using a serial command
+        current_power_state = PowerState::ASLEEP;
+
+        digitalWrite(POWER_LED, LOW);
+
+        sleeper.pwrDownMode();
+        sleeper.sleepDelay(power_state_seconds.asleep * 1000);
+
+        digitalWrite(POWER_LED, HIGH);
+
+        current_power_state = PowerState::AWAKE;
+        power_state_elapsed = 0;
+        Log.Debug(F("pwr: waking"CR));
     }
-
-    goToSleep();
-}
-
-/**
- * Enter sleep mode, conserving battery usage. An interrupt will be attached to
- * changes in the state of digital pin 2.
- *
- * @return void
- */
-void goToSleep() {
-    Log.Debug(F("pwr: sleeping"CR));
-    delay(200);
-
-    // Set the power state to asleep, since this function could've been called
-    // using a serial command
-    POWER_STATE = PowerState::ASLEEP;
-
-    digitalWrite(POWER_LED, LOW);
-    set_sleep_mode(SLEEP_MODE_PWR_DOWN);
-    sleep_enable();
-    attachInterrupt(0, wakeUp, CHANGE);
-
-    sleep_mode();
-
-    detachInterrupt(0);
-    sleep_disable();
-    digitalWrite(POWER_LED, HIGH);
-
-    POWER_STATE = PowerState::AWAKE;
-    Log.Debug(F("pwr: awake"CR));
-}
-
-/**
- * Interrupt executed upon waking of the device.
- *
- * @return void
- */
-void wakeUp() {
-    Log.Debug(F("pwd: waking"CR));
 }
 
 /**
@@ -273,4 +211,44 @@ void performReset(char* args) {
     delay(200);
 
     asm volatile("  jmp 0");
+}
+
+/**
+ * Handle sensor updates.
+ *
+ * @return void
+ */
+void handleSensorUpdates() {
+    if (sensor_update_elapsed >= cfg::data.sensors.update_interval == true) {
+        Log.Debug(F("updating sensors"CR));
+
+        switch (dht11_sensor.read()) {
+            case Dht11::OK:
+                Log.Debug(F("humidity: %d%%"CR), dht11_sensor.getHumidity());
+                Log.Debug(F("temperature: %d°C"CR), dht11_sensor.getTemperature());
+                break;
+
+            // case Dht11::ERROR_CHECKSUM:
+            //     Log.Error(F("dht11: checksum error"CR));
+            //     break;
+
+            // case Dht11::ERROR_TIMEOUT:
+            //     Log.Error(F("dht11: timeout error"CR));
+            //     break;
+
+            // default:
+            //     Log.Error(F("dht11: unknown error"CR));
+            //     break;
+
+            default:
+                Log.Error(F("dht11: error"CR));
+                break;
+        }
+
+        hcsr04_sensor.read();
+        Log.Debug(F("duration: %lμs"CR), hcsr04_sensor.getDuration());
+        Log.Debug(F("distance: %lcm"CR), hcsr04_sensor.getDistance());
+
+        sensor_update_elapsed = 0;
+    }
 }

@@ -11,6 +11,9 @@ ConfigurationManager::Configuration ConfigurationManager::data = {
     {
         32,
         9600
+    },
+    {
+        5000
     }
 };
 
