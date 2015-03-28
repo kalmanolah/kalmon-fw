@@ -6,18 +6,14 @@ int ConfigurationManager::configuration_address = 0;
 // Configuration container.
 ConfigurationManager::Configuration ConfigurationManager::data = {
     CONFIG_VERSION,
-    true,
-    50,
     {
-        32,
-        9600
-    },
-    {
-        5
-    },
-    {
-        30,
-        15
+        true,  // debug
+        250,   // loop delay
+        9600,  // serial baud rate
+        32,    // serial input buffer size
+        10,    // sensor update interval
+        30,    // awake duration
+        300    // sleep duration
     }
 };
 
@@ -64,4 +60,13 @@ void ConfigurationManager::save(char* arguments) {
 
     bytes = EEPROM.updateBlock(configuration_address, data);
     Log.Debug(F("cfg: saved; v=%s, b=%d"CR), data.version, bytes);
+}
+
+/**
+ * Return the value of a key.
+ *
+ * @return uint16_t
+ */
+uint16_t ConfigurationManager::get(uint8_t key) {
+    return data.data[key];
 }

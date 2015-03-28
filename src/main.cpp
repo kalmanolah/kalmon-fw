@@ -40,10 +40,10 @@ void setup()
  */
 void loop()
 {
-    handlePowerState();
     handleSensorUpdates();
+    handlePowerState();
 
-    delay(cfg::data.loop_delay);
+    delay(cfg::get(CFG_LOOP_DELAY));
 }
 
 /**
@@ -58,8 +58,8 @@ void initLogging()
     }
 
     Log.Init(
-        cfg::data.debug ? LOG_LEVEL_DEBUG : LOG_LEVEL_INFOS,
-        cfg::data.serial.baud_rate
+        (bool) cfg::get(CFG_DEBUG) ? LOG_LEVEL_DEBUG : LOG_LEVEL_INFOS,
+        cfg::get(CFG_SERIAL_BAUD_RATE)
     );
 }
 
@@ -97,9 +97,9 @@ void initCommands()
 void handlePowerState() {
     // If we have a waking period and it has expired, go to sleep
     if (current_power_state == PowerState::AWAKE
-        && cfg::data.power.wake_duration > 0
-        && cfg::data.power.sleep_duration > 0
-        && (power_state_elapsed / 1000) >= cfg::data.power.wake_duration) {
+        && cfg::get(CFG_POWER_WAKE_DURATION) > 0
+        && cfg::get(CFG_POWER_SLEEP_DURATION) > 0
+        && (power_state_elapsed / 1000) >= cfg::get(CFG_POWER_WAKE_DURATION)) {
         Log.Debug(F("pwr: sleeping"CR));
         delay(200);
 
@@ -110,7 +110,7 @@ void handlePowerState() {
         digitalWrite(POWER_LED, LOW);
 
         sleeper.pwrDownMode();
-        sleeper.sleepDelay(cfg::data.power.sleep_duration * 1000);
+        sleeper.sleepDelay(cfg::get(CFG_POWER_SLEEP_DURATION) * 1000);
 
         digitalWrite(POWER_LED, HIGH);
 
@@ -140,7 +140,7 @@ void serialEvent() {
             break;
         }
 
-        if (serial_input.buffer.length() < cfg::data.serial.input_buffer_size) {
+        if (serial_input.buffer.length() < cfg::get(CFG_SERIAL_INPUT_BUFFER_SIZE)) {
             serial_input.buffer += ch;
         }
     }
@@ -158,7 +158,7 @@ void serialEvent() {
 void handleSerialInput() {
     uint8_t space_index;
     char command[CommandManager::MAX_COMMAND_SIZE];
-    char arguments[cfg::data.serial.input_buffer_size - CommandManager::MAX_COMMAND_SIZE - 1];
+    char arguments[cfg::get(CFG_SERIAL_INPUT_BUFFER_SIZE) - CommandManager::MAX_COMMAND_SIZE - 1];
 
     // Try to find the index of the first space
     // If no space was found, we set the index to the length of the string - 1
@@ -222,8 +222,8 @@ void performReset(char* args) {
  * @return void
  */
 void handleSensorUpdates() {
-    if (cfg::data.sensors.update_interval > 0
-        && (sensor_update_elapsed / 1000) >= cfg::data.sensors.update_interval) {
+    if (cfg::get(CFG_SENSOR_UPDATE_INTERVAL) > 0
+        && (sensor_update_elapsed / 1000) >= cfg::get(CFG_SENSOR_UPDATE_INTERVAL)) {
         Log.Debug(F("updating sensors"CR));
 
         switch (dht11_sensor.read()) {
