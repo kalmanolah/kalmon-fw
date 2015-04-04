@@ -1,15 +1,15 @@
-[submodule "lib/EEPROMEx"]
-	path = lib/EEPROMEx
-	url = https://github.com/infomaniac50/EEPROMEx.git
-[submodule "lib/logging"]
-	path = lib/logging
-	url = https://github.com/NOX73/Arduino-logging-library.git
-[submodule "lib/elapsedMillis"]
-	path = lib/elapsedMillis
-	url = https://github.com/pfeerick/elapsedMillis.git
-[submodule "lib/Sleep_n0m1"]
-	path = lib/Sleep_n0m1
-	url = https://github.com/n0m1/Sleep_n0m1.git
 [submodule "modules/adalton_libs"]
 	path = modules/adalton_libs
 	url = https://github.com/adalton/arduino.git
+[submodule "modules/EEPROMEx"]
+	path = modules/EEPROMEx
+	url = https://github.com/infomaniac50/EEPROMEx.git
+[submodule "modules/Arduino-logging-library"]
+	path = modules/Arduino-logging-library
+	url = https://github.com/NOX73/Arduino-logging-library.git
+[submodule "modules/elapsedMillis"]
+	path = modules/elapsedMillis
+	url = https://github.com/pfeerick/elapsedMillis.git
+[submodule "modules/Sleep_n0m1"]
+	path = modules/Sleep_n0m1
+	url = https://github.com/n0m1/Sleep_n0m1.git

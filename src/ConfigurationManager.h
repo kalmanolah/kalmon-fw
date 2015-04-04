@@ -22,6 +22,14 @@
 #define CFG_SENSOR_UPDATE_INTERVAL 4
 #define CFG_POWER_WAKE_DURATION 5
 #define CFG_POWER_SLEEP_DURATION 6
+#define CFG_NODE_IDENTIFIER 7
+// 8-19...
+#define CFG_MODULE_1_CONFIG 20
+#define CFG_MODULE_2_CONFIG 21
+#define CFG_MODULE_3_CONFIG 22
+#define CFG_MODULE_4_CONFIG 23
+#define CFG_MODULE_5_CONFIG 24
+// 25-31...
 
 class ConfigurationManager {
     private:

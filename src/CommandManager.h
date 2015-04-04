@@ -1,11 +1,10 @@
 #include "ArduinoHeader.h"
 
 #define COMMAND_AVAILABLE_SLOTS 8
+#define COMMAND_MAX_SIZE 9
 
 class CommandManager {
     public:
-        const static uint8_t MAX_COMMAND_SIZE = 9;
-
         typedef void (*Callback)(char*);
 
         static void register_handler(char*, Callback);
@@ -13,7 +12,7 @@ class CommandManager {
 
     private:
         struct CommandHandler {
-            char command[MAX_COMMAND_SIZE];
+            char command[COMMAND_MAX_SIZE];
             Callback callback;
         };
 

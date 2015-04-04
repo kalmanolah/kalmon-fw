@@ -23,9 +23,17 @@ namespace PowerState {
     enum PowerState { ASLEEP, AWAKE };
 }
 
+static uint8_t current_power_state = PowerState::AWAKE;
+
 static Sleep sleeper;
 
-static uint8_t current_power_state = PowerState::AWAKE;
+static struct {
+    bool ready;
+    String buffer;
+} serial_input = {
+    false,
+    ""
+};
 
 static elapsedMillis sensor_update_elapsed;
 static elapsedMillis power_state_elapsed;

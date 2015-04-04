@@ -1,19 +1,5 @@
 #include "main.h"
 
-
-// Serial input structure.
-struct SerialInputStruct {
-    // Boolean indicating whether the input buffer is ready for processing.
-    bool ready;
-
-    // Input buffer containing received serial data.
-    String buffer;
-} serial_input = {
-    false,
-    ""
-};
-
-
 /**
  * Constructor.
  *
@@ -170,8 +156,8 @@ void serialEvent() {
  */
 void handleSerialInput() {
     uint8_t space_index;
-    char command[CommandManager::MAX_COMMAND_SIZE];
-    char arguments[cfg::get(CFG_SERIAL_INPUT_BUFFER_SIZE) - CommandManager::MAX_COMMAND_SIZE - 1];
+    char command[COMMAND_MAX_SIZE];
+    char arguments[cfg::get(CFG_SERIAL_INPUT_BUFFER_SIZE) - COMMAND_MAX_SIZE - 1];
 
     // Try to find the index of the first space
     // If no space was found, we set the index to the length of the string - 1
