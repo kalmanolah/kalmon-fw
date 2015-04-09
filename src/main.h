@@ -11,6 +11,7 @@
 #include "ConfigurationManager.h"
 #include "CommandManager.h"
 #include "HCSR04.h"
+#include "KeyesMicrophone.h"
 
 #define cfg ConfigurationManager
 #define cmd CommandManager
@@ -38,12 +39,19 @@ static struct {
 static elapsedMillis sensor_update_elapsed;
 static elapsedMillis power_state_elapsed;
 
-static Dht11 dht11_sensor(2);
-static HCSR04 hcsr04_sensor(4, 6);
+static Dht11 dht11_sensor(0);
+static Dht11 *dht11_sensor_ref = NULL;
+
+static HCSR04 hcsr04_sensor(0, 0);
+static HCSR04 *hcsr04_sensor_ref = NULL;
+
+static KeyesMicrophone sound_sensor(0);
+static KeyesMicrophone *sound_sensor_ref = NULL;
 
 void initLogging();
 void initCommands();
 void initConfiguration();
+void initModules();
 void initPower();
 
 void handlePowerState();

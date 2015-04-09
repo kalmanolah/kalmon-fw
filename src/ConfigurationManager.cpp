@@ -13,7 +13,11 @@ ConfigurationManager::Configuration ConfigurationManager::data = {
         32,    // serial input buffer size
         10,    // sensor update interval
         30,    // awake duration
-        300    // sleep duration
+        300,   // sleep duration
+        12,    // HCSR04 Sensor trig pin
+        11,    // HCSR04 Sensor echo pin
+        2,     // DHT11 Sensor pin
+        A0     // KeyesMicrophone Sensor pin
     }
 };
 

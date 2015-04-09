@@ -14,6 +14,7 @@ void setup()
     initConfiguration();
     initLogging();
     initCommands();
+    initModules();
     initPower();
 
     pinMode(POWER_LED, OUTPUT);
@@ -75,6 +76,29 @@ void initCommands()
     cmd::register_handler("cfg_set", setConfigurationValue);
     cmd::register_handler("stats", printStats);
     cmd::register_handler("reset", performReset);
+}
+
+/**
+ * Initialize attached modules.
+ *
+ * @return void
+ */
+void initModules()
+{
+    if (cfg::get(CFG_DHT11_SENSOR_PIN) > 0) {
+        dht11_sensor = Dht11(cfg::get(CFG_DHT11_SENSOR_PIN));
+        dht11_sensor_ref = &dht11_sensor;
+    }
+
+    if (cfg::get(CFG_KEYESMICROPHONE_SENSOR_PIN) > 0) {
+        sound_sensor = KeyesMicrophone(cfg::get(CFG_KEYESMICROPHONE_SENSOR_PIN));
+        sound_sensor_ref = &sound_sensor;
+    }
+
+    if ((cfg::get(CFG_HCSR04_SENSOR_TRIG_PIN) > 0) && (cfg::get(CFG_HCSR04_SENSOR_ECHO_PIN) > 0)) {
+        hcsr04_sensor = HCSR04(cfg::get(CFG_HCSR04_SENSOR_TRIG_PIN), cfg::get(CFG_HCSR04_SENSOR_ECHO_PIN));
+        hcsr04_sensor_ref = &hcsr04_sensor;
+    }
 }
 
 /**
@@ -193,32 +217,41 @@ void handleSensorUpdates() {
         && (sensor_update_elapsed / 1000) >= cfg::get(CFG_SENSOR_UPDATE_INTERVAL)) {
         Log.Debug(F("updating sensors"CR));
 
-        switch (dht11_sensor.read()) {
-            case Dht11::OK:
-                Log.Debug(F("humidity: %d%%"CR), dht11_sensor.getHumidity());
-                Log.Debug(F("temperature: %d°C"CR), dht11_sensor.getTemperature());
-                break;
-
-            case Dht11::ERROR_CHECKSUM:
-                Log.Error(F("dht11: checksum error"CR));
-                break;
-
-            case Dht11::ERROR_TIMEOUT:
-                Log.Error(F("dht11: timeout error"CR));
-                break;
-
-            default:
-                Log.Error(F("dht11: unknown error"CR));
-                break;
-
-            // default:
-            //     Log.Error(F("dht11: error"CR));
-            //     break;
+        if (hcsr04_sensor_ref) {
+            hcsr04_sensor_ref->read();
+            Log.Debug(F("duration: %lμs"CR), hcsr04_sensor_ref->getDuration());
+            Log.Debug(F("distance: %lcm"CR), hcsr04_sensor_ref->getDistance());
         }
 
-        hcsr04_sensor.read();
-        Log.Debug(F("duration: %lμs"CR), hcsr04_sensor.getDuration());
-        Log.Debug(F("distance: %lcm"CR), hcsr04_sensor.getDistance());
+        if (dht11_sensor_ref) {
+            switch (dht11_sensor_ref->read()) {
+                case Dht11::OK:
+                    Log.Debug(F("humidity: %d%%"CR), dht11_sensor_ref->getHumidity());
+                    Log.Debug(F("temperature: %d°C"CR), dht11_sensor_ref->getTemperature());
+                    break;
+
+                case Dht11::ERROR_CHECKSUM:
+                    Log.Error(F("dht11: checksum error"CR));
+                    break;
+
+                case Dht11::ERROR_TIMEOUT:
+                    Log.Error(F("dht11: timeout error"CR));
+                    break;
+
+                default:
+                    Log.Error(F("dht11: unknown error"CR));
+                    break;
+
+                // default:
+                //     Log.Error(F("dht11: error"CR));
+                //     break;
+            }
+        }
+
+        if (sound_sensor_ref) {
+            sound_sensor_ref->read();
+            Log.Debug(F("sound: %d"CR), sound_sensor_ref->getLevel());
+        }
 
         sensor_update_elapsed = 0;
     }
