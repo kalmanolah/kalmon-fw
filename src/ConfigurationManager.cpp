@@ -7,17 +7,18 @@ int ConfigurationManager::configuration_address = 0;
 ConfigurationManager::Configuration ConfigurationManager::data = {
     CONFIG_VERSION,
     {
-        true,  // debug
+        true   // debug
+    },
+    {
         250,   // loop delay
         9600,  // serial baud rate
         32,    // serial input buffer size
         10,    // sensor update interval
         30,    // awake duration
-        300,   // sleep duration
-        12,    // HCSR04 Sensor trig pin
-        11,    // HCSR04 Sensor echo pin
-        2,     // DHT11 Sensor pin
-        A0     // KeyesMicrophone Sensor pin
+        300    // sleep duration
+    },
+    {
+
     }
 };
 
@@ -69,12 +70,54 @@ void ConfigurationManager::save() {
 /**
  * Return the value of a key.
  *
- * @return uint16_t
+ * @return bool
  */
-uint16_t ConfigurationManager::get(uint8_t key) {
-    return data.data[key];
+bool ConfigurationManager::getBoolean(uint8_t key) {
+    return data.booleans[key - CONFIG_BOOLEANS_OFFSET];
 }
 
-void ConfigurationManager::set(uint8_t key, uint16_t value) {
-    data.data[key] = value;
+/**
+ * Return the value of a key.
+ *
+ * @return uint16_t
+ */
+uint16_t ConfigurationManager::getInteger(uint8_t key) {
+    return data.integers[key - CONFIG_INTEGERS_OFFSET];
+}
+
+/**
+ * Return the value of a key.
+ *
+ * @return char*
+ */
+char* ConfigurationManager::getString(uint8_t key) {
+    return data.strings[key - CONFIG_STRINGS_OFFSET];
+}
+
+
+/**
+ * Set the value for a key.
+ *
+ * @return void
+ */
+void ConfigurationManager::setBoolean(uint8_t key, bool value) {
+    data.booleans[key - CONFIG_BOOLEANS_OFFSET] = value;
+}
+
+/**
+ * Set the value for a key.
+ *
+ * @return void
+ */
+void ConfigurationManager::setInteger(uint8_t key, uint16_t value) {
+    data.integers[key - CONFIG_INTEGERS_OFFSET] = value;
+}
+
+/**
+ * Set the value for a key.
+ *
+ * @return void
+ */
+void ConfigurationManager::setString(uint8_t key, char* value) {
+    strcpy(data.strings[key - CONFIG_STRINGS_OFFSET], value);
 }

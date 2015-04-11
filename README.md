@@ -12,11 +12,11 @@ Currently implemented features:
 * Serial input handling
 * Command handler with callback registration
 * Decent logging output
-* Static support for sonar and temp/humidity sensor
+* Dynamic module/peripheral/sensor registration support (you can add up to n
+  modules by specificing a type and parameters)
 
 ## TODO
 
-* Input/output pin/type registering
 * Move serial stuff into separate file
 * Move power management stuff into separate file
 * Etc..

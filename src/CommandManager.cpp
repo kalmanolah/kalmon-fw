@@ -13,7 +13,7 @@ CommandManager::CommandHandler CommandManager::handlers[COMMAND_AVAILABLE_SLOTS]
  * @param Callback callback Pointer to a function to execute as a callback upon
  *                          receiving the command
  */
-void CommandManager::register_handler(char* command, Callback callback)
+void CommandManager::registerHandler(char* command, Callback callback)
 {
     CommandHandler handler;
 
@@ -32,7 +32,7 @@ void CommandManager::register_handler(char* command, Callback callback)
  * @return bool            Boolean indicating whether or not the command was
  *                         handled
  */
-bool CommandManager::handle_command(char* command, char* arguments)
+bool CommandManager::handleCommand(char* command, char* arguments)
 {
     for (int i = 0; i < handler_count; i++) {
         if (strcmp(handlers[i].command, command) == 0) {

@@ -31,7 +31,7 @@ void loop()
     handleSensorUpdates();
     handlePowerState();
 
-    delay(cfg::get(CFG_LOOP_DELAY));
+    delay(cfg::getInteger(CFG_LOOP_DELAY));
 }
 
 /**
@@ -46,8 +46,8 @@ void initLogging()
     }
 
     Log.Init(
-        (bool) cfg::get(CFG_DEBUG) ? LOG_LEVEL_DEBUG : LOG_LEVEL_INFOS,
-        cfg::get(CFG_SERIAL_BAUD_RATE)
+        cfg::getBoolean(CFG_DEBUG) ? LOG_LEVEL_DEBUG : LOG_LEVEL_INFOS,
+        cfg::getInteger(CFG_SERIAL_BAUD_RATE)
     );
 }
 
@@ -70,12 +70,12 @@ void initConfiguration()
 void initCommands()
 {
     // Register command handlers
-    cmd::register_handler("cfg_load", loadConfiguration);
-    cmd::register_handler("cfg_save", saveConfiguration);
-    cmd::register_handler("cfg_get", getConfigurationValue);
-    cmd::register_handler("cfg_set", setConfigurationValue);
-    cmd::register_handler("stats", printStats);
-    cmd::register_handler("reset", performReset);
+    cmd::registerHandler("cfg_load", loadConfiguration);
+    cmd::registerHandler("cfg_save", saveConfiguration);
+    cmd::registerHandler("cfg_get", getConfigurationValue);
+    cmd::registerHandler("cfg_set", setConfigurationValue);
+    cmd::registerHandler("stats", printStats);
+    cmd::registerHandler("reset", performReset);
 }
 
 /**
@@ -85,19 +85,8 @@ void initCommands()
  */
 void initModules()
 {
-    if (cfg::get(CFG_DHT11_SENSOR_PIN) > 0) {
-        dht11_sensor = Dht11(cfg::get(CFG_DHT11_SENSOR_PIN));
-        dht11_sensor_ref = &dht11_sensor;
-    }
-
-    if (cfg::get(CFG_KEYESMICROPHONE_SENSOR_PIN) > 0) {
-        sound_sensor = KeyesMicrophone(cfg::get(CFG_KEYESMICROPHONE_SENSOR_PIN));
-        sound_sensor_ref = &sound_sensor;
-    }
-
-    if ((cfg::get(CFG_HCSR04_SENSOR_TRIG_PIN) > 0) && (cfg::get(CFG_HCSR04_SENSOR_ECHO_PIN) > 0)) {
-        hcsr04_sensor = HCSR04(cfg::get(CFG_HCSR04_SENSOR_TRIG_PIN), cfg::get(CFG_HCSR04_SENSOR_ECHO_PIN));
-        hcsr04_sensor_ref = &hcsr04_sensor;
+    for (int i = CFG_MODULE_1_CONFIGURATION; i < (CFG_MODULE_1_CONFIGURATION + MODULE_AVAILABLE_SLOTS); i++) {
+        mod::registerModule(cfg::getString(i));
     }
 }
 
@@ -120,9 +109,9 @@ void initPower()
 void handlePowerState() {
     // If we have a waking period and it has expired, go to sleep
     if (current_power_state == PowerState::AWAKE
-        && cfg::get(CFG_POWER_WAKE_DURATION) > 0
-        && cfg::get(CFG_POWER_SLEEP_DURATION) > 0
-        && (power_state_elapsed / 1000) >= cfg::get(CFG_POWER_WAKE_DURATION)) {
+        && cfg::getInteger(CFG_POWER_WAKE_DURATION) > 0
+        && cfg::getInteger(CFG_POWER_SLEEP_DURATION) > 0
+        && (power_state_elapsed / 1000) >= cfg::getInteger(CFG_POWER_WAKE_DURATION)) {
         Log.Debug(F("pwr: sleeping"CR));
         delay(200);
 
@@ -133,7 +122,7 @@ void handlePowerState() {
         digitalWrite(POWER_LED, LOW);
 
         sleeper.pwrDownMode();
-        sleeper.sleepDelay((uint32_t) cfg::get(CFG_POWER_SLEEP_DURATION) * 1000);
+        sleeper.sleepDelay((uint32_t) cfg::getInteger(CFG_POWER_SLEEP_DURATION) * 1000);
 
         digitalWrite(POWER_LED, HIGH);
 
@@ -163,7 +152,7 @@ void serialEvent() {
             break;
         }
 
-        if (serial_input.buffer.length() < cfg::get(CFG_SERIAL_INPUT_BUFFER_SIZE)) {
+        if (serial_input.buffer.length() < cfg::getInteger(CFG_SERIAL_INPUT_BUFFER_SIZE)) {
             serial_input.buffer += ch;
         }
     }
@@ -181,7 +170,7 @@ void serialEvent() {
 void handleSerialInput() {
     uint8_t space_index;
     char command[COMMAND_MAX_SIZE];
-    char arguments[cfg::get(CFG_SERIAL_INPUT_BUFFER_SIZE) - COMMAND_MAX_SIZE - 1];
+    char arguments[cfg::getInteger(CFG_SERIAL_INPUT_BUFFER_SIZE) - COMMAND_MAX_SIZE - 1];
 
     // Try to find the index of the first space
     // If no space was found, we set the index to the length of the string - 1
@@ -199,7 +188,7 @@ void handleSerialInput() {
 
     Log.Debug(F("cmd: \"%s\"; args: \"%s\""CR), command, arguments);
 
-    if (!cmd::handle_command(command, arguments)) {
+    if (!cmd::handleCommand(command, arguments)) {
         Log.Error(F("cmd: invalid"CR));
     }
 
@@ -213,46 +202,10 @@ void handleSerialInput() {
  * @return void
  */
 void handleSensorUpdates() {
-    if (cfg::get(CFG_SENSOR_UPDATE_INTERVAL) > 0
-        && (sensor_update_elapsed / 1000) >= cfg::get(CFG_SENSOR_UPDATE_INTERVAL)) {
-        Log.Debug(F("updating sensors"CR));
-
-        if (hcsr04_sensor_ref) {
-            hcsr04_sensor_ref->read();
-            Log.Debug(F("duration: %lμs"CR), hcsr04_sensor_ref->getDuration());
-            Log.Debug(F("distance: %lcm"CR), hcsr04_sensor_ref->getDistance());
-        }
-
-        if (dht11_sensor_ref) {
-            switch (dht11_sensor_ref->read()) {
-                case Dht11::OK:
-                    Log.Debug(F("humidity: %d%%"CR), dht11_sensor_ref->getHumidity());
-                    Log.Debug(F("temperature: %d°C"CR), dht11_sensor_ref->getTemperature());
-                    break;
-
-                case Dht11::ERROR_CHECKSUM:
-                    Log.Error(F("dht11: checksum error"CR));
-                    break;
-
-                case Dht11::ERROR_TIMEOUT:
-                    Log.Error(F("dht11: timeout error"CR));
-                    break;
-
-                default:
-                    Log.Error(F("dht11: unknown error"CR));
-                    break;
-
-                // default:
-                //     Log.Error(F("dht11: error"CR));
-                //     break;
-            }
-        }
-
-        if (sound_sensor_ref) {
-            sound_sensor_ref->read();
-            Log.Debug(F("sound: %d"CR), sound_sensor_ref->getLevel());
-        }
-
+    if (cfg::getInteger(CFG_SENSOR_UPDATE_INTERVAL) > 0
+        && (sensor_update_elapsed / 1000) >= cfg::getInteger(CFG_SENSOR_UPDATE_INTERVAL)) {
+        Log.Debug(F("mod: updating"CR));
+        mod::updateModules();
         sensor_update_elapsed = 0;
     }
 }
@@ -318,12 +271,18 @@ void getConfigurationValue(char* args) {
 
     key = strtol(args, &errstr, 10);
 
-    if (key >= CONFIG_AVAILABLE_SLOTS) {
-        Log.Error(F("cfg: key out of bounds; max=%d"CR), CONFIG_AVAILABLE_SLOTS - 1);
+    if (key >= (CONFIG_STRINGS_AVAILABLE_SLOTS + CONFIG_STRINGS_OFFSET)) {
+        Log.Error(F("cfg: key out of bounds; max=%d"CR), (CONFIG_STRINGS_AVAILABLE_SLOTS + CONFIG_STRINGS_OFFSET - 1));
     } else if (*errstr) {
         Log.Error(F("cfg: error converting key; part=%s"CR), errstr);
     } else {
-        Log.Info(F("cfg: %s=%d"CR), args, cfg::get(key));
+        if (key >= CONFIG_STRINGS_OFFSET) {
+            Log.Info(F("cfg: %s=%s"CR), args, cfg::getString(key));
+        } else if (key >= CONFIG_INTEGERS_OFFSET) {
+            Log.Info(F("cfg: %s=%d"CR), args, cfg::getInteger(key));
+        } else {
+            Log.Info(F("cfg: %s=%d"CR), args, cfg::getBoolean(key));
+        }
     }
 }
 
@@ -345,18 +304,26 @@ void setConfigurationValue(char* args) {
     if (*key_tok && *value_tok) {
         key = strtol(key_tok, &errstr, 10);
 
-        if (key >= CONFIG_AVAILABLE_SLOTS) {
-            Log.Error(F("cfg: key out of bounds; max=%d"CR), CONFIG_AVAILABLE_SLOTS - 1);
+        if (key >= (CONFIG_STRINGS_AVAILABLE_SLOTS + CONFIG_STRINGS_OFFSET - 1)) {
+            Log.Error(F("cfg: key out of bounds; max=%d"CR), (CONFIG_STRINGS_AVAILABLE_SLOTS + CONFIG_STRINGS_OFFSET - 1));
         } else if (*errstr) {
             Log.Error(F("cfg: error converting key; part=%s"CR), errstr);
         } else {
-            value = strtol(value_tok, &errstr, 10);
+            if (key >= CONFIG_STRINGS_OFFSET) {
+                cfg::setString(key, value_tok);
+                Log.Info(F("cfg: %d=%s"CR), key, value_tok);
+            } else if (key >= CONFIG_INTEGERS_OFFSET) {
+                value = strtol(value_tok, &errstr, 10);
 
-            if (*errstr) {
-                Log.Error(F("cfg: error converting value; part=%s"CR), errstr);
+                if (*errstr) {
+                    Log.Error(F("cfg: error converting value; part=%s"CR), errstr);
+                } else {
+                    cfg::setInteger(key, value);
+                    Log.Info(F("cfg: %d=%d"CR), key, value);
+                }
             } else {
-                cfg::set(key, value);
-                Log.Info(F("cfg: %d=%d"CR), key, value);
+                cfg::setBoolean(key, value_tok[0] == '1');
+                Log.Info(F("cfg: %d=%d"CR), key, value_tok[0] == '1');
             }
         }
     }

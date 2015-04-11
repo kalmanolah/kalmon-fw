@@ -6,27 +6,35 @@
 #define CONFIG_VERSION "001"
 
 // Size of the configuration block memory pool.
-#define CONFIG_MEMORY_SIZE 32
+#define CONFIG_MEMORY_SIZE 192
 
 // EEPROM size. Bad things will happen if this isn't set correctly.
 #define CONFIG_EEPROM_SIZE EEPROMSizeATmega328
 
-// Amount of available configuration options.
-#define CONFIG_AVAILABLE_SLOTS 32
-
-// Configuration options
+#define CONFIG_BOOLEANS_AVAILABLE_SLOTS 8
+#define CONFIG_BOOLEANS_OFFSET 0
 #define CFG_DEBUG 0
-#define CFG_LOOP_DELAY 1
-#define CFG_SERIAL_BAUD_RATE 2
-#define CFG_SERIAL_INPUT_BUFFER_SIZE 3
-#define CFG_SENSOR_UPDATE_INTERVAL 4
-#define CFG_POWER_WAKE_DURATION 5
-#define CFG_POWER_SLEEP_DURATION 6
-#define CFG_NODE_IDENTIFIER 7
-#define CFG_HCSR04_SENSOR_TRIG_PIN 8
-#define CFG_HCSR04_SENSOR_ECHO_PIN 9
-#define CFG_DHT11_SENSOR_PIN 10
-#define CFG_KEYESMICROPHONE_SENSOR_PIN 11
+
+#define CONFIG_INTEGERS_AVAILABLE_SLOTS 16
+#define CONFIG_INTEGERS_OFFSET 8
+#define CFG_LOOP_DELAY 8
+#define CFG_SERIAL_BAUD_RATE 9
+#define CFG_SERIAL_INPUT_BUFFER_SIZE 10
+#define CFG_SENSOR_UPDATE_INTERVAL 11
+#define CFG_POWER_WAKE_DURATION 12
+#define CFG_POWER_SLEEP_DURATION 13
+
+#define CONFIG_STRINGS_AVAILABLE_SLOTS 8
+#define CONFIG_STRINGS_OFFSET 24
+#define CONFIG_STRINGS_MAX_SIZE 11
+#define CFG_MODULE_1_CONFIGURATION 24
+#define CFG_MODULE_2_CONFIGURATION 25
+#define CFG_MODULE_3_CONFIGURATION 26
+#define CFG_MODULE_4_CONFIGURATION 27
+#define CFG_MODULE_5_CONFIGURATION 28
+#define CFG_MODULE_6_CONFIGURATION 29
+#define CFG_MODULE_7_CONFIGURATION 30
+#define CFG_MODULE_8_CONFIGURATION 31
 
 class ConfigurationManager {
     private:
@@ -35,7 +43,9 @@ class ConfigurationManager {
 
         struct Configuration {
             char version[4];
-            uint16_t data[CONFIG_AVAILABLE_SLOTS];
+            bool booleans[CONFIG_BOOLEANS_AVAILABLE_SLOTS];
+            uint16_t integers[CONFIG_INTEGERS_AVAILABLE_SLOTS];
+            char strings[CONFIG_STRINGS_AVAILABLE_SLOTS][CONFIG_STRINGS_MAX_SIZE];
         };
 
     public:
@@ -46,6 +56,11 @@ class ConfigurationManager {
         static void load();
         static void save();
 
-        static uint16_t get(uint8_t key);
-        static void set(uint8_t key, uint16_t value);
+        static bool getBoolean(uint8_t key);
+        static uint16_t getInteger(uint8_t key);
+        static char* getString(uint8_t key);
+
+        static void setBoolean(uint8_t key, bool value);
+        static void setInteger(uint8_t key, uint16_t value);
+        static void setString(uint8_t key, char* value);
 };
