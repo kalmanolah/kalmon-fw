@@ -55,12 +55,12 @@ void ModuleManager::registerModule(char* configuration)
 
                 break;
 
-            case MODULE_TYPE_KEYESMICROPHONE:
+            case MODULE_TYPE_KY038:
                 {
                     uint8_t pin = strtol(strsep(&string, ","), NULL, 10);
 
                     if (pin > 0) {
-                        KeyesMicrophone object = KeyesMicrophone(pin);
+                        KY038 object = KY038(pin);
                     }
                 }
 
@@ -134,9 +134,9 @@ void ModuleManager::updateModules()
 
                 break;
 
-            case MODULE_TYPE_KEYESMICROPHONE:
+            case MODULE_TYPE_KY038:
                 {
-                    KeyesMicrophone* object = reinterpret_cast<KeyesMicrophone*>(modules[i].object);
+                    KY038* object = reinterpret_cast<KY038*>(modules[i].object);
                     object->read();
                     Log.Debug(F("sound: %d"CR), object->getLevel());
                 }

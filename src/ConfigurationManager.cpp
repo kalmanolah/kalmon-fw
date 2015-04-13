@@ -13,9 +13,9 @@ ConfigurationManager::Configuration ConfigurationManager::data = {
         250,   // loop delay
         9600,  // serial baud rate
         32,    // serial input buffer size
-        10,    // sensor update interval
+        15,    // sensor update interval
         30,    // awake duration
-        300    // sleep duration
+        0      // sleep duration
     },
     {
 

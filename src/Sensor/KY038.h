@@ -1,11 +1,11 @@
 /**
-    Keyes Microphone Sound Detection Sensor class
+    Keyes Microphone Sound Detection Sensor (KY-038) class
 
     http://www.dx.com/p/arduino-microphone-sound-detection-sensor-module-red-135533#.VSbAR_YRRhE
  */
 
-#ifndef keyesmicrophone_h
-#define keyesmicrophone_h
+#ifndef ky038_h
+#define ky038_h
 
 #if defined(ARDUINO) && (ARDUINO >= 100)
 #    include <Arduino.h>
@@ -14,11 +14,11 @@
 #endif
 
 /*
- * KeyesMicrophone
+ * KY038
  *
  * A class that is in charge of managing a Keyes Microphone Sound Detection sensor.
  */
-class KeyesMicrophone {
+class KY038 {
 private:
     // The last measured sound level
     uint16_t level = 0;
@@ -28,12 +28,12 @@ private:
 
 public:
     /*
-     * KeyesMicrophone
+     * KY038
      *
-     * Constructs a new KeyesMicrophone object that manages a Keyes Microphone Sound Detection sensor
+     * Constructs a new KY038 object that manages a Keyes Microphone Sound Detection sensor
      * using a given analog input pin.
      */
-    KeyesMicrophone(uint8_t analog_input_pin);
+    KY038(uint8_t analog_input_pin);
 
     /*
      * read
