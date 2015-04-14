@@ -61,6 +61,19 @@ void ModuleManager::registerModule(char* configuration)
 
                     if (pin > 0) {
                         KY038 object = KY038(pin);
+                        memcpy(module.object, &object, sizeof(object));
+                    }
+                }
+
+                break;
+
+            case MODULE_TYPE_MNEBPTCMN:
+                {
+                    uint8_t pin = strtol(strsep(&string, ","), NULL, 10);
+
+                    if (pin > 0) {
+                        MNEBPTCMN object = MNEBPTCMN(pin);
+                        memcpy(module.object, &object, sizeof(object));
                     }
                 }
 
@@ -139,6 +152,15 @@ void ModuleManager::updateModules()
                     KY038* object = reinterpret_cast<KY038*>(modules[i].object);
                     object->read();
                     Log.Debug(F("sound: %d"CR), object->getLevel());
+                }
+
+                break;
+
+            case MODULE_TYPE_MNEBPTCMN:
+                {
+                    MNEBPTCMN* object = reinterpret_cast<MNEBPTCMN*>(modules[i].object);
+                    object->read();
+                    Log.Debug(F("light: %d"CR), object->getLevel());
                 }
 
                 break;

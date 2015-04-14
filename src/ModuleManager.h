@@ -4,12 +4,14 @@
 #include <Dht11.h>
 #include "Sensor/HCSR04.h"
 #include "Sensor/KY038.h"
+#include "Sensor/MNEBPTCMN.h"
 
 #define MODULE_AVAILABLE_SLOTS 8
 
 #define MODULE_TYPE_DHT11 1
 #define MODULE_TYPE_HCSR04 2
 #define MODULE_TYPE_KY038 3
+#define MODULE_TYPE_MNEBPTCMN 4
 
 class ModuleManager {
     public:
