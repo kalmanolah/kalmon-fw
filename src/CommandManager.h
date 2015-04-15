@@ -1,3 +1,6 @@
+#ifndef COMMAND_MANAGER_H
+#define COMMAND_MANAGER_H
+
 #include "ArduinoHeader.h"
 
 #define COMMAND_AVAILABLE_SLOTS 8
@@ -19,3 +22,5 @@ class CommandManager {
         static uint8_t handler_count;
         static CommandHandler handlers[COMMAND_AVAILABLE_SLOTS];
 };
+
+#endif

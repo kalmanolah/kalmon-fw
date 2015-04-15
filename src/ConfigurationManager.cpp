@@ -5,7 +5,7 @@ int ConfigurationManager::configuration_address = 0;
 
 // Configuration container.
 ConfigurationManager::Configuration ConfigurationManager::data = {
-    CONFIG_VERSION,
+    KALMON_VERSION,
     {
         true   // debug
     },
@@ -15,7 +15,8 @@ ConfigurationManager::Configuration ConfigurationManager::data = {
         32,    // serial input buffer size
         15,    // sensor update interval
         30,    // awake duration
-        0      // sleep duration
+        0,     // sleep duration
+        0      // node address
     },
     {
 
@@ -28,7 +29,7 @@ ConfigurationManager::Configuration ConfigurationManager::data = {
  * @return void
  */
 void ConfigurationManager::initialize() {
-    EEPROM.setMemPool(CONFIG_MEMORY_SIZE, CONFIG_EEPROM_SIZE);
+    EEPROM.setMemPool(CONFIG_MEMORY_START, CONFIG_EEPROM_SIZE);
     configuration_address = EEPROM.getAddress(sizeof(data));
 }
 

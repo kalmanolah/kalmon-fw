@@ -38,6 +38,9 @@ void ModuleManager::registerModule(char* configuration)
                     if (pin > 0) {
                         Dht11 object = Dht11(pin);
                         memcpy(module.object, &object, sizeof(object));
+
+                        presentSensor(module_count, 0, S_HUM);
+                        presentSensor(module_count, 0, S_TEMP);
                     }
                 }
 
@@ -50,6 +53,8 @@ void ModuleManager::registerModule(char* configuration)
                     if (trig_pin > 0 && echo_pin > 0) {
                         HCSR04 object = HCSR04(trig_pin, echo_pin);
                         memcpy(module.object, &object, sizeof(object));
+
+                        presentSensor(module_count, 0, S_DISTANCE);
                     }
                 }
 
@@ -62,6 +67,8 @@ void ModuleManager::registerModule(char* configuration)
                     if (pin > 0) {
                         KY038 object = KY038(pin);
                         memcpy(module.object, &object, sizeof(object));
+
+                        presentSensor(module_count, 0, S_CUSTOM);
                     }
                 }
 
@@ -74,6 +81,8 @@ void ModuleManager::registerModule(char* configuration)
                     if (pin > 0) {
                         MNEBPTCMN object = MNEBPTCMN(pin);
                         memcpy(module.object, &object, sizeof(object));
+
+                        presentSensor(module_count, 0, S_LIGHT_LEVEL);
                     }
                 }
 
@@ -115,6 +124,10 @@ void ModuleManager::updateModules()
                         case Dht11::OK:
                             Log.Debug(F("humidity: %d%%"CR), object->getHumidity());
                             Log.Debug(F("temperature: %d°C"CR), object->getTemperature());
+
+                            sendSensorValue(i, 0, V_HUM, object->getHumidity());
+                            sendSensorValue(i, 1, V_TEMP, object->getTemperature());
+
                             break;
 
                         case Dht11::ERROR_CHECKSUM:
@@ -143,6 +156,8 @@ void ModuleManager::updateModules()
                     object->read();
                     Log.Debug(F("duration: %lμs"CR), object->getDuration());
                     Log.Debug(F("distance: %lcm"CR), object->getDistance());
+
+                    sendSensorValue(i, 0, V_DISTANCE, object->getDistance());
                 }
 
                 break;
@@ -152,6 +167,8 @@ void ModuleManager::updateModules()
                     KY038* object = reinterpret_cast<KY038*>(modules[i].object);
                     object->read();
                     Log.Debug(F("sound: %d"CR), object->getLevel());
+
+                    sendSensorValue(i, 0, V_VAR1, object->getLevel());
                 }
 
                 break;
@@ -161,6 +178,8 @@ void ModuleManager::updateModules()
                     MNEBPTCMN* object = reinterpret_cast<MNEBPTCMN*>(modules[i].object);
                     object->read();
                     Log.Debug(F("light: %d"CR), object->getLevel());
+
+                    sendSensorValue(i, 0, V_LIGHT_LEVEL, object->getLevel());
                 }
 
                 break;
@@ -169,4 +188,38 @@ void ModuleManager::updateModules()
                 break;
         }
     }
+}
+
+/**
+ * Present a module's sensor to the gateway.
+ *
+ * @param module_index Index of sensor to present within module. Starts at 0.
+ * @param sensor_index Index of module the sensor belongs to. Starts at 0.
+ * @param sensor_type  Type of sensor.
+ *
+ * @return void
+ */
+void ModuleManager::presentSensor(uint8_t module_index, uint8_t sensor_index, uint8_t sensor_type)
+{
+    gateway.present((module_index * MODULE_SENSORS_PER_MODULE) + sensor_index, sensor_type, true);
+}
+
+/**
+ * Sensor a sensor's value to the gateway.
+ *
+ * @param module_index      Index of sensor within module to send value for. Starts at 0.
+ * @param sensor_index      Index of module the sensor belongs to. Starts at 0.
+ * @param sensor_value_type Type of the value sent to the gateway.
+ * @param sensor_value      Value sent to the gateway.
+ *
+ * @return void
+ */
+void ModuleManager::sendSensorValue(uint8_t module_index, uint8_t sensor_index, uint8_t sensor_value_type, uint8_t sensor_value)
+{
+    gatewaySensorMessage
+        .setSensor((module_index * MODULE_SENSORS_PER_MODULE) + sensor_index)
+        .setType(sensor_value_type)
+        .set(sensor_value);
+
+    gateway.send(gatewaySensorMessage, true);
 }

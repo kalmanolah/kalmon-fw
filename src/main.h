@@ -1,12 +1,12 @@
-#include "ArduinoHeader.h"
+#define MAIN
 
-#include <avr/interrupt.h>
-#include <avr/power.h>
-#include <avr/sleep.h>
+#include "ArduinoHeader.h"
+#include "KalmonVersion.h"
+
 #include <Logging.h>
 #include <elapsedMillis.h>
-#include <Sleep_n0m1.h>
 
+#include "Globals.h"
 #include "ConfigurationManager.h"
 #include "CommandManager.h"
 #include "ModuleManager.h"
@@ -15,8 +15,6 @@
 #define cmd CommandManager
 #define mod ModuleManager
 
-//using namespace std;
-
 const uint8_t POWER_LED = 13;
 
 namespace PowerState {
@@ -24,8 +22,6 @@ namespace PowerState {
 }
 
 static uint8_t current_power_state = PowerState::AWAKE;
-
-static Sleep sleeper;
 
 static struct {
     bool ready;
@@ -41,12 +37,13 @@ static elapsedMillis power_state_elapsed;
 void initLogging();
 void initCommands();
 void initConfiguration();
+void initConnection();
 void initModules();
-void initPower();
 
 void handlePowerState();
 void handleSerialInput();
 void handleSensorUpdates();
+void handleConnection();
 
 int getFreeMemory();
 

@@ -1,12 +1,15 @@
+#ifndef CONFIGURATION_MANAGER_H
+#define CONFIGURATION_MANAGER_H
+
 #include "ArduinoHeader.h"
+#include "KalmonVersion.h"
+
 #include <EEPROMex.h>
 #include <Logging.h>
 
-// Configuration version to determine data integrity.
-#define CONFIG_VERSION "001"
-
 // Size of the configuration block memory pool.
-#define CONFIG_MEMORY_SIZE 192
+//#define CONFIG_MEMORY_SIZE 192
+#define CONFIG_MEMORY_START 512
 
 // EEPROM size. Bad things will happen if this isn't set correctly.
 #define CONFIG_EEPROM_SIZE EEPROMSizeATmega328
@@ -23,6 +26,7 @@
 #define CFG_SENSOR_UPDATE_INTERVAL 11
 #define CFG_POWER_WAKE_DURATION 12
 #define CFG_POWER_SLEEP_DURATION 13
+#define CFG_NODE_ADDRESS 14
 
 #define CONFIG_STRINGS_AVAILABLE_SLOTS 8
 #define CONFIG_STRINGS_OFFSET 24
@@ -64,3 +68,5 @@ class ConfigurationManager {
         static void setInteger(uint8_t key, uint16_t value);
         static void setString(uint8_t key, char* value);
 };
+
+#endif

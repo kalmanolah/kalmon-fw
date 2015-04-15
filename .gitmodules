@@ -13,3 +13,6 @@
 [submodule "modules/Sleep_n0m1"]
 	path = modules/Sleep_n0m1
 	url = https://github.com/n0m1/Sleep_n0m1.git
+[submodule "modules/mysensors_Arduino"]
+	path = modules/mysensors_Arduino
+	url = https://github.com/mysensors/Arduino.git

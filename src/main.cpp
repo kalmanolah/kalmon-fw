@@ -13,9 +13,9 @@ void setup()
     // Initialize all the things
     initConfiguration();
     initLogging();
+    initConnection();
     initCommands();
     initModules();
-    initPower();
 
     pinMode(POWER_LED, OUTPUT);
     digitalWrite(POWER_LED, HIGH);
@@ -28,10 +28,12 @@ void setup()
  */
 void loop()
 {
+    handleConnection();
+
     handleSensorUpdates();
     handlePowerState();
 
-    delay(cfg::getInteger(CFG_LOOP_DELAY));
+    gateway.wait(cfg::getInteger(CFG_LOOP_DELAY));
 }
 
 /**
@@ -47,7 +49,8 @@ void initLogging()
 
     Log.Init(
         cfg::getBoolean(CFG_DEBUG) ? LOG_LEVEL_DEBUG : LOG_LEVEL_INFOS,
-        cfg::getInteger(CFG_SERIAL_BAUD_RATE)
+        //cfg::getInteger(CFG_SERIAL_BAUD_RATE)
+        115200
     );
 }
 
@@ -60,6 +63,27 @@ void initConfiguration()
 {
     cfg::initialize();
     cfg::load();
+}
+
+/**
+ * Initialize the connection with the gateway.
+ *
+ * @return void
+ */
+void initConnection()
+{
+    gateway.begin(NULL, !cfg::getInteger(CFG_NODE_ADDRESS) ? AUTO : cfg::getInteger(CFG_NODE_ADDRESS));
+    gateway.sendSketchInfo(KALMON_NAME, KALMON_VERSION, true);
+}
+
+/**
+ * Handle updates to the connection with the gateway.
+ *
+ * @return void
+ */
+void handleConnection()
+{
+    gateway.process();
 }
 
 /**
@@ -91,16 +115,6 @@ void initModules()
 }
 
 /**
- * Initialize power management.
- *
- * @return void
- */
-void initPower()
-{
-    sleeper.setCalibrationInterval(5);
-}
-
-/**
  * Determine whether or not sleeping is necessary and if so, initiate the sleep
  * sequence.
  *
@@ -113,7 +127,7 @@ void handlePowerState() {
         && cfg::getInteger(CFG_POWER_SLEEP_DURATION) > 0
         && (power_state_elapsed / 1000) >= cfg::getInteger(CFG_POWER_WAKE_DURATION)) {
         Log.Debug(F("pwr: sleeping"CR));
-        delay(200);
+        gateway.wait(200);
 
         // Set the power state to asleep, since this function could've been called
         // using a serial command
@@ -121,8 +135,7 @@ void handlePowerState() {
 
         digitalWrite(POWER_LED, LOW);
 
-        sleeper.pwrDownMode();
-        sleeper.sleepDelay((uint32_t) cfg::getInteger(CFG_POWER_SLEEP_DURATION) * 1000);
+        gateway.sleep((uint32_t) cfg::getInteger(CFG_POWER_SLEEP_DURATION) * 1000);
 
         digitalWrite(POWER_LED, HIGH);
 
@@ -237,7 +250,7 @@ void printStats(char* args) {
  */
 void performReset(char* args) {
     Log.Info(F("reset"CR));
-    delay(200);
+    gateway.wait(200);
 
     asm volatile("  jmp 0");
 }

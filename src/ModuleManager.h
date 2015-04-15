@@ -1,12 +1,18 @@
+#ifndef MODULE_MANAGER_H
+#define MODULE_MANAGER_H
+
 #include "ArduinoHeader.h"
 
 #include <Logging.h>
 #include <Dht11.h>
+
+#include "Globals.h"
 #include "Sensor/HCSR04.h"
 #include "Sensor/KY038.h"
 #include "Sensor/MNEBPTCMN.h"
 
 #define MODULE_AVAILABLE_SLOTS 8
+#define MODULE_SENSORS_PER_MODULE 5
 
 #define MODULE_TYPE_DHT11 1
 #define MODULE_TYPE_HCSR04 2
@@ -17,6 +23,8 @@ class ModuleManager {
     public:
         static void registerModule(char*);
         static void updateModules();
+        static void presentSensor(uint8_t module_index, uint8_t sensor_index, uint8_t sensor_type);
+        static void sendSensorValue(uint8_t module_index, uint8_t sensor_index, uint8_t sensor_value_type, uint8_t sensor_value);
 
     private:
         struct Module {
@@ -27,3 +35,5 @@ class ModuleManager {
         static uint8_t module_count;
         static Module modules[MODULE_AVAILABLE_SLOTS];
 };
+
+#endif
