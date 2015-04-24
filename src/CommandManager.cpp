@@ -9,15 +9,15 @@ CommandManager::CommandHandler CommandManager::handlers[COMMAND_AVAILABLE_SLOTS]
 /**
  * Register a handler for a command.
  *
- * @param char*    command  Character array representing command to handle
+ * @param uint8_t  command  Short representing command
  * @param Callback callback Pointer to a function to execute as a callback upon
  *                          receiving the command
  */
-void CommandManager::registerHandler(char* command, Callback callback)
+void CommandManager::registerHandler(uint8_t command, Callback callback)
 {
     CommandHandler handler;
 
-    strcpy(handler.command, command);
+    handler.command = command;
     handler.callback = callback;
 
     handlers[handler_count] = handler;
@@ -27,15 +27,17 @@ void CommandManager::registerHandler(char* command, Callback callback)
 /**
  * Handle a command.
  *
- * @param  char* command   Character array representing command to handle
- * @param  char* arguments Character array representing command arguments
- * @return bool            Boolean indicating whether or not the command was
- *                         handled
+ * @param  uint8_t command   Short representing command to handle
+ * @param  char*   arguments Character array representing command arguments
+ * @return bool              Boolean indicating whether or not the command was
+ *                           handled
  */
-bool CommandManager::handleCommand(char* command, char* arguments)
+bool CommandManager::handleCommand(uint8_t command, char* arguments)
 {
-    for (int i = 0; i < handler_count; i++) {
-        if (strcmp(handlers[i].command, command) == 0) {
+    uint8_t i;
+
+    for (i = 0; i < handler_count; i++) {
+        if (handlers[i].command == command) {
             reinterpret_cast<void(*)(char*)>(handlers[i].callback)(arguments);
 
             return true;

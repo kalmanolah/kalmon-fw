@@ -94,12 +94,13 @@ void handleConnection()
 void initCommands()
 {
     // Register command handlers
-    cmd::registerHandler("cfg_load", loadConfiguration);
-    cmd::registerHandler("cfg_save", saveConfiguration);
-    cmd::registerHandler("cfg_get", getConfigurationValue);
-    cmd::registerHandler("cfg_set", setConfigurationValue);
-    cmd::registerHandler("stats", printStats);
-    cmd::registerHandler("reset", performReset);
+    cmd::registerHandler(21, printStats);
+    cmd::registerHandler(22, performReset);
+
+    cmd::registerHandler(41, loadConfiguration);
+    cmd::registerHandler(42, saveConfiguration);
+    cmd::registerHandler(43, getConfigurationValue);
+    cmd::registerHandler(44, setConfigurationValue);
 }
 
 /**
@@ -182,8 +183,8 @@ void serialEvent() {
  */
 void handleSerialInput() {
     uint8_t space_index;
-    char command[COMMAND_MAX_SIZE];
-    char arguments[cfg::getInteger(CFG_SERIAL_INPUT_BUFFER_SIZE) - COMMAND_MAX_SIZE - 1];
+    uint8_t command;
+    char arguments[cfg::getInteger(CFG_SERIAL_INPUT_BUFFER_SIZE) - 2];
 
     // Try to find the index of the first space
     // If no space was found, we set the index to the length of the string - 1
@@ -196,10 +197,10 @@ void handleSerialInput() {
     // Pass our command handler everything up to the first space converted to
     // int (command identifier) along with everything after the first space as
     // args
-    serial_input.buffer.substring(0, space_index).toCharArray(command, sizeof(command));
+    command = serial_input.buffer.substring(0, space_index).toInt();
     serial_input.buffer.substring(space_index + 1).toCharArray(arguments, sizeof(arguments));
 
-    Log.Debug(F("cmd: \"%s\"; args: \"%s\""CR), command, arguments);
+    Log.Debug(F("cmd: \"%d\"; args: \"%s\""CR), command, arguments);
 
     if (!cmd::handleCommand(command, arguments)) {
         Log.Error(F("cmd: invalid"CR));
