@@ -50,7 +50,7 @@ void initLogging()
     Log.Init(
         cfg::getBoolean(CFG_DEBUG) ? LOG_LEVEL_DEBUG : LOG_LEVEL_INFOS,
         //cfg::getInteger(CFG_SERIAL_BAUD_RATE)
-        115200
+        BAUD_RATE
     );
 }
 
