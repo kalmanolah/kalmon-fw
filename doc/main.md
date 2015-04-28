@@ -100,7 +100,7 @@ The following configuration options are currently defined:
 | Name | Key | Type | Default | Description |
 |------|-----|------|---------|-------------|
 | DEBUG | 0 | bool | true | The global debug flag. |
-| LOOP_DELAY | 8 | uint16_t | 250 | The time the deviceshould be idle per loop, in milliseconds. |
+| LOOP_DELAY | 8 | uint16_t | 250 | The time the device should be idle per loop, in milliseconds. |
 | SERIAL_BAUD_RATE | 9 | uint16_t | 9600 | Serial baud rate. Deprecated. |
 | SERIAL_INPUT_BUFFER_SIZE | 10 | uint16_t | 32 | The buffer size for serial input, in bytes. |
 | SENSOR_UPDATE_INTERVAL | 11 | uint16_t | 15 | Interval between sensor updates, in seconds. If set to `0`, disables sensor updates. If the device is woken from sleep, the sensor update timer is reset, meaning the interval time has to pass every time the device wakes up before a sensor update is sent. |
