@@ -21,9 +21,14 @@ See [doc/main.md](doc/main.md)
 
 ## TODO
 
+* Add `cfg_list` and `cfg_clear` commands
+* Submit proper battery voltage
+* Add support for the ADXL345 accelerometer
+* Write more documentation
+* Generate a UUID for the device on first boot, and save it
+* Allow for commands to be executed over the air
 * Move serial stuff into separate file
 * Move power management stuff into separate file
-* Etc..
 
 ## License
 
