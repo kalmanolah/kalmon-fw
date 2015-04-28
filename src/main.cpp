@@ -16,9 +16,6 @@ void setup()
     initConnection();
     initCommands();
     initModules();
-
-    pinMode(POWER_LED, OUTPUT);
-    digitalWrite(POWER_LED, HIGH);
 }
 
 /**
@@ -133,15 +130,13 @@ void handlePowerState() {
         // Set the power state to asleep, since this function could've been called
         // using a serial command
         current_power_state = PowerState::ASLEEP;
-
-        digitalWrite(POWER_LED, LOW);
-
         gateway.sleep((uint32_t) cfg::getInteger(CFG_POWER_SLEEP_DURATION) * 1000);
-
-        digitalWrite(POWER_LED, HIGH);
-
         current_power_state = PowerState::AWAKE;
+
+        // Reset all counting timers after a wakeup
         power_state_elapsed = 0;
+        sensor_update_elapsed = 0;
+
         Log.Debug(F("pwr: waking"CR));
     }
 }
@@ -220,6 +215,11 @@ void handleSensorUpdates() {
         && (sensor_update_elapsed / 1000) >= cfg::getInteger(CFG_SENSOR_UPDATE_INTERVAL)) {
         Log.Debug(F("mod: updating"CR));
         mod::updateModules();
+
+        // Submit the battery level and some other stats while we're at it
+        gateway.sendBatteryLevel(getBatteryLevel(), NETWORK_REQUEST_ACK);
+        sendCustomData(NODE_SENSOR_ID, CV_AVAILABLE_MEMORY, getFreeMemory());
+
         sensor_update_elapsed = 0;
     }
 }
@@ -236,12 +236,23 @@ int getFreeMemory() {
 }
 
 /**
+ * Returns the current battery level as a percentage.
+ *
+ * @return uint8_t
+ */
+uint8_t getBatteryLevel() {
+    // @TODO Add support for measuring battery voltage
+    return 100;
+}
+
+/**
  * Prints stats.
  *
  * @return void
  */
 void printStats(char* args) {
     Log.Info(F("free: %dB"CR), getFreeMemory());
+    Log.Info(F("battery: %d%%"CR), getBatteryLevel());
 }
 
 /**

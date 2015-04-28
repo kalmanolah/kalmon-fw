@@ -14,8 +14,8 @@ ConfigurationManager::Configuration ConfigurationManager::data = {
         9600,  // serial baud rate
         32,    // serial input buffer size
         15,    // sensor update interval
-        30,    // awake duration
-        0,     // sleep duration
+        25,    // awake duration
+        1800,  // sleep duration
         0      // node address
     },
     {

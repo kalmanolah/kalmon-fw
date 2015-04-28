@@ -1,0 +1,29 @@
+#ifndef NETWORK_H
+#define NETWORK_H
+
+#define NETWORK_REQUEST_ACK true
+#define NETWORK_DEFAULT_MESSAGE_DELAY 250
+#define NETWORK_SENSOR_PRESENT_DELAY 500
+#define NETWORK_SENSOR_VALUE_SUBMIT_DELAY NETWORK_SENSOR_PRESENT_DELAY
+
+#include <MySensor.h>
+
+// Custom value types
+#define CV_AVAILABLE_MEMORY 128
+
+#include "ModuleManager.h"
+
+#ifdef MAIN
+#define EXTERN
+#else
+#define EXTERN extern
+#endif
+
+EXTERN MySensor gateway;
+EXTERN MyMessage gatewayMessage;
+
+void presentSensor(uint8_t module_index, uint8_t sensor_index, uint8_t sensor_type);
+void submitSensorValue(uint8_t module_index, uint8_t sensor_index, uint8_t value_type, uint8_t value);
+void sendCustomData(uint8_t sensor_id = NODE_SENSOR_ID, uint8_t type = V_VAR1, uint16_t value = NULL);
+
+#endif

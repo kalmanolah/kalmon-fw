@@ -6,7 +6,7 @@
 #include <Logging.h>
 #include <Dht11.h>
 
-#include "Globals.h"
+#include "Network.h"
 #include "Sensor/HCSR04.h"
 #include "Sensor/KY038.h"
 #include "Sensor/MNEBPTCMN.h"
@@ -23,8 +23,6 @@ class ModuleManager {
     public:
         static void registerModule(char*);
         static void updateModules();
-        static void presentSensor(uint8_t module_index, uint8_t sensor_index, uint8_t sensor_type);
-        static void sendSensorValue(uint8_t module_index, uint8_t sensor_index, uint8_t sensor_value_type, uint8_t sensor_value);
 
     private:
         struct Module {

@@ -6,7 +6,7 @@
 #include <Logging.h>
 #include <elapsedMillis.h>
 
-#include "Globals.h"
+#include "Network.h"
 #include "ConfigurationManager.h"
 #include "CommandManager.h"
 #include "ModuleManager.h"
@@ -14,8 +14,6 @@
 #define cfg ConfigurationManager
 #define cmd CommandManager
 #define mod ModuleManager
-
-const uint8_t POWER_LED = 13;
 
 namespace PowerState {
     enum PowerState { ASLEEP, AWAKE };
@@ -46,6 +44,7 @@ void handleSensorUpdates();
 void handleConnection();
 
 int getFreeMemory();
+uint8_t getBatteryLevel();
 
 void printStats(char* = NULL);
 void performReset(char* = NULL);
