@@ -15,6 +15,10 @@ Currently implemented features:
 * Dynamic module/peripheral/sensor registration support (you can add up to n
   modules by specificing a type and parameters)
 
+## Documentation
+
+See [doc/main.md](doc/main.md)
+
 ## TODO
 
 * Move serial stuff into separate file

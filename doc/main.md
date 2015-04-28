@@ -32,9 +32,9 @@ code are prefixed with `C` for `CUSTOM`.
 
 Currently, the custom value types in use are the following:
 
-```
-128 => CV_AVAILABLE_MEMORY
-```
+| Name | Value |
+|------|-------|
+| CV_AVAILABLE_MEMORY | 128 |
 
 ### Node Information & Stats
 
@@ -49,11 +49,15 @@ child sensor id `NODE_SENSOR_ID` or `255`.
 Currently, the following node information and statistics are sent:
 
 * Available memory:
-  Example message:
+
+    Example message:
+
     ```
     5;255;1;0;128;1064
     ```
-  Parsing this message would yield:
+
+    Parsing this message would yield:
+
     ```
     Node ID         => 5
     Child Sensor ID => 255  # NODE_SENSOR_ID
@@ -76,12 +80,12 @@ The following commands are currently defined:
 
 | Command | Format | Description |
 |---------|--------|-------------|
-| 21 | $cmd\n | Print device stats |
-| 22 | $cmd\n | Perform a soft reset |
-| 41 | $cmd\n | Load configuration from EEPROM |
-| 42 | $cmd\n | Save configuration to EEPROM |
-| 43 | $cmd $key\n | Get the value of a configuration variable |
-| 44 | $cmd $key $value\n | Set the value of a configuration variable |
+| 21 | `$cmd\n` | Print device stats |
+| 22 | `$cmd\n` | Perform a soft reset |
+| 41 | `$cmd\n` | Load configuration from EEPROM |
+| 42 | `$cmd\n` | Save configuration to EEPROM |
+| 43 | `$cmd $key\n` | Get the value of a configuration variable |
+| 44 | `$cmd $key $value\n` | Set the value of a configuration variable |
 
 ## Configuration
 
