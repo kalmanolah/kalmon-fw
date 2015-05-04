@@ -30,16 +30,12 @@ eight-bit char. We have started defining custom sensor types starting from
 |------|-------|-------------|
 | CS_ACCELEROMETER | 128 | Accelerometer. Added to support the ADXL-345 module. |
 
-See [`Network.h`](src/Network.h).
-
 ### Custom Value Types
 
 The MySensors Serial Protocol supports about fourty value types. These are
 sent to the gateway when submitting a sensor value in the form of an unsigned
 eight-bit char. We have started defining custom value types starting from
 `128`. The constant names are prefixed with `C` for `CUSTOM`.
-
-See [`Network.h`](src/Network.h).
 
 | Name | Value | Description |
 |------|-------|-------------|
