@@ -19,22 +19,34 @@ documentation can be found [here][3].
 Users and Integrators are encouraged to read the MySensors Serial Protocol
 documentation thoroughly before reading any further.
 
+### Custom Sensor Types
+
+The MySensors Serial Protocol supports about thirty sensor types. These are
+sent to the gateway when presenting a new sensor in the form of an unsigned
+eight-bit char. We have started defining custom sensor types starting from
+`128`. The constant names are prefixed with `C` for `CUSTOM`.
+
+| Name | Value | Description |
+|------|-------|-------------|
+| CS_ACCELEROMETER | 128 | Accelerometer. Added to support the ADXL-345 module. |
+
+See `[Network.h](src/Network.h)`.
+
 ### Custom Value Types
 
-The MySensors Serial Protocol reserves one unsigned 8-bit short for value types
-in the message header, of which about `40` are in use.
+The MySensors Serial Protocol supports about fourty value types. These are
+sent to the gateway when submitting a sensor value in the form of an unsigned
+eight-bit char. We have started defining custom value types starting from
+`128`. The constant names are prefixed with `C` for `CUSTOM`.
 
-Since some information would be lost if we were to solely use these value
-types, we have started defining custom value types starting from `128`.
+See `[Network.h](src/Network.h)`.
 
-As opposed to the MySensors value type constants, the constants used in the
-code are prefixed with `C` for `CUSTOM`.
-
-Currently, the custom value types in use are the following:
-
-| Name | Value |
-|------|-------|
-| CV_AVAILABLE_MEMORY | 128 |
+| Name | Value | Description |
+|------|-------|-------------|
+| CV_AVAILABLE_MEMORY | 128 | Available memory in bytes. |
+| CV_ACCELEROMETER_X | 129 | Accelerometer X value. |
+| CV_ACCELEROMETER_Y | 130 | Accelerometer Y value. |
+| CV_ACCELEROMETER_Z | 131 | Accelerometer Z value. |
 
 ### Node Information & Stats
 
