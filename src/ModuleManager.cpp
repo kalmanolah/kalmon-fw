@@ -37,7 +37,9 @@ void ModuleManager::registerModule(char* configuration)
 
                     if (pin > 0) {
                         Dht11 object = Dht11(pin);
+                        module.object = malloc(sizeof(object));
                         memcpy(module.object, &object, sizeof(object));
+
 
                         presentSensor(module_count, 0, S_HUM);
                         presentSensor(module_count, 1, S_TEMP);
@@ -52,6 +54,7 @@ void ModuleManager::registerModule(char* configuration)
 
                     if (trig_pin > 0 && echo_pin > 0) {
                         HCSR04 object = HCSR04(trig_pin, echo_pin);
+                        module.object = malloc(sizeof(object));
                         memcpy(module.object, &object, sizeof(object));
 
                         presentSensor(module_count, 0, S_DISTANCE);
@@ -66,6 +69,7 @@ void ModuleManager::registerModule(char* configuration)
 
                     if (pin > 0) {
                         KY038 object = KY038(pin);
+                        module.object = malloc(sizeof(object));
                         memcpy(module.object, &object, sizeof(object));
 
                         presentSensor(module_count, 0, S_CUSTOM);
@@ -80,10 +84,28 @@ void ModuleManager::registerModule(char* configuration)
 
                     if (pin > 0) {
                         MNEBPTCMN object = MNEBPTCMN(pin);
+                        module.object = malloc(sizeof(object));
                         memcpy(module.object, &object, sizeof(object));
 
                         presentSensor(module_count, 0, S_LIGHT_LEVEL);
                     }
+                }
+
+                break;
+
+            case MODULE_TYPE_ADXL345:
+                {
+                    ADXL345 object = ADXL345();
+
+                    if (!object.begin()) {
+                        Serial.println("Error!");
+                    }
+
+                    object.setRange(ADXL345_RANGE_16G);
+                    module.object = malloc(sizeof(object));
+                    memcpy(module.object, &object, sizeof(object));
+
+                    presentSensor(module_count, 0, CS_ACCELEROMETER);
                 }
 
                 break;
@@ -180,6 +202,20 @@ void ModuleManager::updateModules()
                     Log.Debug(F("light: %d"CR), object->getLevel());
 
                     submitSensorValue(i, 0, V_LIGHT_LEVEL, object->getLevel());
+                }
+
+                break;
+
+            case MODULE_TYPE_ADXL345:
+                {
+                    ADXL345* object = reinterpret_cast<ADXL345*>(modules[i].object);
+
+                    Vector norm = object->readNormalize();
+                    Log.Debug(F("accel: x=%d, y=%d, z=%d"CR), norm.XAxis, norm.YAxis, norm.ZAxis);
+
+                    submitSensorValue(i, 0, CV_ACCELEROMETER_X, norm.XAxis);
+                    submitSensorValue(i, 0, CV_ACCELEROMETER_Y, norm.YAxis);
+                    submitSensorValue(i, 0, CV_ACCELEROMETER_Z, norm.ZAxis);
                 }
 
                 break;

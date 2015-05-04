@@ -16,3 +16,6 @@
 [submodule "modules/mysensors_Arduino"]
 	path = modules/mysensors_Arduino
 	url = https://github.com/kalmanolah/Arduino.git
+[submodule "modules/Arduino-ADXL345"]
+	path = modules/Arduino-ADXL345
+	url = https://github.com/jarzebski/Arduino-ADXL345.git

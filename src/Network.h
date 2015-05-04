@@ -8,8 +8,14 @@
 
 #include <MySensor.h>
 
+// Custom sensor types
+#define CS_ACCELEROMETER 128
+
 // Custom value types
 #define CV_AVAILABLE_MEMORY 128
+#define CV_ACCELEROMETER_X 129
+#define CV_ACCELEROMETER_Y 130
+#define CV_ACCELEROMETER_Z 131
 
 #include "ModuleManager.h"
 

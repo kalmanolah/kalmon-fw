@@ -5,6 +5,7 @@
 
 #include <Logging.h>
 #include <Dht11.h>
+#include <ADXL345.h>
 
 #include "Network.h"
 #include "Sensor/HCSR04.h"
@@ -18,6 +19,7 @@
 #define MODULE_TYPE_HCSR04 2
 #define MODULE_TYPE_KY038 3
 #define MODULE_TYPE_MNEBPTCMN 4
+#define MODULE_TYPE_ADXL345 5
 
 class ModuleManager {
     public:
@@ -27,7 +29,7 @@ class ModuleManager {
     private:
         struct Module {
             uint8_t type;
-            char object[16];
+            void* object;
         };
 
         static uint8_t module_count;
