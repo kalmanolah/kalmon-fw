@@ -29,7 +29,10 @@ EXTERN MySensor gateway;
 EXTERN MyMessage gatewayMessage;
 
 void presentSensor(uint8_t module_index, uint8_t sensor_index, uint8_t sensor_type);
-void submitSensorValue(uint8_t module_index, uint8_t sensor_index, uint8_t value_type, uint8_t value);
 void sendCustomData(uint8_t sensor_id = NODE_SENSOR_ID, uint8_t type = V_VAR1, uint16_t value = NULL);
+
+void submitSensorValue(uint8_t module_index, uint8_t sensor_index, uint8_t value_type, uint16_t value);
+void submitSensorValue(uint8_t module_index, uint8_t sensor_index, uint8_t value_type, int16_t value);
+void submitSensorValue(uint8_t module_index, uint8_t sensor_index, uint8_t value_type, float value);
 
 #endif

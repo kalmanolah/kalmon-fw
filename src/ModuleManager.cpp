@@ -31,6 +31,7 @@ void ModuleManager::registerModule(char* configuration)
         module.type = type;
 
         switch (module.type) {
+            #ifdef MODULE_TYPE_DHT11
             case MODULE_TYPE_DHT11:
                 {
                     uint8_t pin = strtol(strsep(&string, ","), NULL, 10);
@@ -40,13 +41,15 @@ void ModuleManager::registerModule(char* configuration)
                         module.object = malloc(sizeof(object));
                         memcpy(module.object, &object, sizeof(object));
 
-
                         presentSensor(module_count, 0, S_HUM);
                         presentSensor(module_count, 1, S_TEMP);
                     }
                 }
 
                 break;
+            #endif
+
+            #ifdef MODULE_TYPE_HCSR04
             case MODULE_TYPE_HCSR04:
                 {
                     uint8_t trig_pin = strtol(strsep(&string, ","), NULL, 10);
@@ -62,7 +65,9 @@ void ModuleManager::registerModule(char* configuration)
                 }
 
                 break;
+            #endif
 
+            #ifdef MODULE_TYPE_KY038
             case MODULE_TYPE_KY038:
                 {
                     uint8_t pin = strtol(strsep(&string, ","), NULL, 10);
@@ -72,12 +77,14 @@ void ModuleManager::registerModule(char* configuration)
                         module.object = malloc(sizeof(object));
                         memcpy(module.object, &object, sizeof(object));
 
-                        presentSensor(module_count, 0, S_CUSTOM);
+                        presentSensor(module_count, 0, S_DISTANCE);
                     }
                 }
 
                 break;
+            #endif
 
+            #ifdef MODULE_TYPE_MNEBPTCMN
             case MODULE_TYPE_MNEBPTCMN:
                 {
                     uint8_t pin = strtol(strsep(&string, ","), NULL, 10);
@@ -92,7 +99,9 @@ void ModuleManager::registerModule(char* configuration)
                 }
 
                 break;
+            #endif
 
+            #ifdef MODULE_TYPE_ADXL345
             case MODULE_TYPE_ADXL345:
                 {
                     ADXL345 object = ADXL345();
@@ -101,14 +110,23 @@ void ModuleManager::registerModule(char* configuration)
                         Serial.println("Error!");
                     }
 
-                    object.setRange(ADXL345_RANGE_16G);
+                    object.setRange(ADXL345_RANGE_2G);
+                    object.setActivityThreshold(2.0);    // Recommended 2 g
+                    object.setInactivityThreshold(2.0);  // Recommended 2 g
+                    object.setTimeInactivity(5);         // Recommended 5 s
+                    object.setActivityXYZ(1);         // Check activity on X,Y,Z-Axis
+                    object.setInactivityXYZ(1);       // Check inactivity on X,Y,Z-Axis
+                    object.useInterrupt(ADXL345_INT1);
+
                     module.object = malloc(sizeof(object));
                     memcpy(module.object, &object, sizeof(object));
 
-                    presentSensor(module_count, 0, CS_ACCELEROMETER);
+                    presentSensor(module_count, 0, S_MOTION);
+                    presentSensor(module_count, 1, CS_ACCELEROMETER);
                 }
 
                 break;
+            #endif
 
             default:
                 break;
@@ -137,6 +155,7 @@ void ModuleManager::updateModules()
         }
 
         switch (modules[i].type) {
+            #ifdef MODULE_TYPE_DHT11
             case MODULE_TYPE_DHT11:
                 {
                     Dht11* object = reinterpret_cast<Dht11*>(modules[i].object);
@@ -171,7 +190,9 @@ void ModuleManager::updateModules()
                 }
 
                 break;
+            #endif
 
+            #ifdef MODULE_TYPE_HCSR04
             case MODULE_TYPE_HCSR04:
                 {
                     HCSR04* object = reinterpret_cast<HCSR04*>(modules[i].object);
@@ -179,11 +200,13 @@ void ModuleManager::updateModules()
                     Log.Debug(F("duration: %lμs"CR), object->getDuration());
                     Log.Debug(F("distance: %lcm"CR), object->getDistance());
 
-                    submitSensorValue(i, 0, V_DISTANCE, object->getDistance());
+                    submitSensorValue(i, 0, V_DISTANCE, (uint16_t) object->getDistance());
                 }
 
                 break;
+            #endif
 
+            #ifdef MODULE_TYPE_KY038
             case MODULE_TYPE_KY038:
                 {
                     KY038* object = reinterpret_cast<KY038*>(modules[i].object);
@@ -194,7 +217,9 @@ void ModuleManager::updateModules()
                 }
 
                 break;
+            #endif
 
+            #ifdef MODULE_TYPE_MNEBPTCMN
             case MODULE_TYPE_MNEBPTCMN:
                 {
                     MNEBPTCMN* object = reinterpret_cast<MNEBPTCMN*>(modules[i].object);
@@ -205,20 +230,31 @@ void ModuleManager::updateModules()
                 }
 
                 break;
+            #endif
 
+            #ifdef MODULE_TYPE_ADXL345
             case MODULE_TYPE_ADXL345:
                 {
                     ADXL345* object = reinterpret_cast<ADXL345*>(modules[i].object);
 
                     Vector norm = object->readNormalize();
-                    Log.Debug(F("accel: x=%d, y=%d, z=%d"CR), norm.XAxis, norm.YAxis, norm.ZAxis);
+                    Log.Debug(F("acceleration: x=%d, y=%d, z=%d"CR), norm.XAxis, norm.YAxis, norm.ZAxis);
 
-                    submitSensorValue(i, 0, CV_ACCELEROMETER_X, norm.XAxis);
-                    submitSensorValue(i, 0, CV_ACCELEROMETER_Y, norm.YAxis);
-                    submitSensorValue(i, 0, CV_ACCELEROMETER_Z, norm.ZAxis);
+                    Activites activ = object->readActivites();
+                    Log.Debug(F("activity: %T"CR), activ.isActivity);
+
+                    Serial.println(norm.XAxis);
+                    Serial.println(norm.YAxis);
+                    Serial.println(norm.ZAxis);
+
+                    submitSensorValue(i, 0, V_TRIPPED, (bool) activ.isActivity);
+                    submitSensorValue(i, 1, CV_ACCELEROMETER_X, norm.XAxis);
+                    submitSensorValue(i, 1, CV_ACCELEROMETER_Y, norm.YAxis);
+                    submitSensorValue(i, 1, CV_ACCELEROMETER_Z, norm.ZAxis);
                 }
 
                 break;
+            #endif
 
             default:
                 break;

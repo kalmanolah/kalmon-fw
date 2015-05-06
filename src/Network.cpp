@@ -25,12 +25,34 @@ void presentSensor(uint8_t module_index, uint8_t sensor_index, uint8_t sensor_ty
  *
  * @return void
  */
-void submitSensorValue(uint8_t module_index, uint8_t sensor_index, uint8_t sensor_value_type, uint8_t sensor_value)
+void submitSensorValue(uint8_t module_index, uint8_t sensor_index, uint8_t sensor_value_type, int16_t sensor_value)
 {
     gatewayMessage
         .setSensor((module_index * MODULE_SENSORS_PER_MODULE) + sensor_index)
         .setType(sensor_value_type)
         .set(sensor_value);
+
+    gateway.send(gatewayMessage, NETWORK_REQUEST_ACK);
+    gateway.wait(NETWORK_SENSOR_VALUE_SUBMIT_DELAY);
+}
+
+void submitSensorValue(uint8_t module_index, uint8_t sensor_index, uint8_t sensor_value_type, uint16_t sensor_value)
+{
+    gatewayMessage
+        .setSensor((module_index * MODULE_SENSORS_PER_MODULE) + sensor_index)
+        .setType(sensor_value_type)
+        .set(sensor_value);
+
+    gateway.send(gatewayMessage, NETWORK_REQUEST_ACK);
+    gateway.wait(NETWORK_SENSOR_VALUE_SUBMIT_DELAY);
+}
+
+void submitSensorValue(uint8_t module_index, uint8_t sensor_index, uint8_t sensor_value_type, float sensor_value)
+{
+    gatewayMessage
+        .setSensor((module_index * MODULE_SENSORS_PER_MODULE) + sensor_index)
+        .setType(sensor_value_type)
+        .set(sensor_value, 5);
 
     gateway.send(gatewayMessage, NETWORK_REQUEST_ACK);
     gateway.wait(NETWORK_SENSOR_VALUE_SUBMIT_DELAY);
