@@ -107,9 +107,11 @@ void ModuleManager::registerModule(char* configuration)
                     ADXL345 object = ADXL345();
 
                     if (!object.begin()) {
+                        Log.Error(F("Error loading ADXL345"CR));
                         Serial.println("Error!");
                     }
 
+                    // @TODO Make all of this stuff configurable
                     object.setRange(ADXL345_RANGE_2G);
                     object.setActivityThreshold(2.0);    // Recommended 2 g
                     object.setInactivityThreshold(2.0);  // Recommended 2 g
