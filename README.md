@@ -21,14 +21,14 @@ See [doc/main.md](doc/main.md)
 
 ## TODO
 
-* Add `cfg_list` and `cfg_clear` commands
-* Submit proper battery voltage
-* Add support for the ADXL345 accelerometer
-* Write more documentation
-* Generate a UUID for the device on first boot, and save it
-* Allow for commands to be executed over the air
-* Move serial stuff into separate file
-* Move power management stuff into separate file
+* (LOW) Add `cfg_list` and `cfg_clear` commands
+* (MED) Submit proper battery voltage
+* (LOW) ADXL345: (double) tap, freefall, freefall impact detection support
+* (MED) Write more documentation
+* (LOW) Generate a UUID for the device on first boot, and save it
+* (MED) Allow for commands to be executed over the air
+* (LOW) Move serial stuff into separate file
+* (LOW) Move power management stuff into separate file
 
 ## License
 
