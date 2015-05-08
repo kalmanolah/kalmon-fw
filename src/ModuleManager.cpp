@@ -104,27 +104,52 @@ void ModuleManager::registerModule(char* configuration)
             #ifdef MODULE_TYPE_ADXL345
             case MODULE_TYPE_ADXL345:
                 {
+                    uint8_t options[3];
+                    uint8_t i;
+
+                    // Load options
+                    for (i = 0; i < 3; i++) {
+                        options[i] = strtol(strsep(&string, ","), NULL, 10);
+                    }
+
                     ADXL345 object = ADXL345();
 
                     if (!object.begin()) {
                         Log.Error(F("Error loading ADXL345"CR));
-                        Serial.println("Error!");
                     }
 
-                    // @TODO Make all of this stuff configurable
+                    // Set sensitivity
                     object.setRange(ADXL345_RANGE_2G);
-                    object.setActivityThreshold(2.0);    // Recommended 2 g
-                    object.setInactivityThreshold(2.0);  // Recommended 2 g
-                    object.setTimeInactivity(5);         // Recommended 5 s
-                    object.setActivityXYZ(1);         // Check activity on X,Y,Z-Axis
-                    object.setInactivityXYZ(1);       // Check inactivity on X,Y,Z-Axis
+
+                    // Configure activity detection
+                    if (options[0] > 0) {
+                        object.setActivityXYZ(1);
+                        object.setActivityThreshold(options[0]);
+                    }
+
+                    // Configure inactivity detection
+                    if (options[1] > 0) {
+                        object.setInactivityXYZ(1);
+                        object.setInactivityThreshold(options[1]);
+                    }
+
+                    // Present accelerometer
+                    presentSensor(module_count, 0, CS_ACCELEROMETER);
+
+                    // If activity or inactivity detection are enabled, set the inactivity time
+                    if (options[0] > 0 || options[1] > 0) {
+                        object.setTimeInactivity(options[2] > 0 ? options[2] : 5);
+
+                        // If activity or inactivity detection are enabled, present a motion sensor in addition
+                        // to the accelerometer
+                        presentSensor(module_count, 1, S_MOTION);
+                    }
+
+                    // Set correct interrupt to use
                     object.useInterrupt(ADXL345_INT1);
 
                     module.object = malloc(sizeof(object));
                     memcpy(module.object, &object, sizeof(object));
-
-                    presentSensor(module_count, 0, S_MOTION);
-                    presentSensor(module_count, 1, CS_ACCELEROMETER);
                 }
 
                 break;
@@ -242,17 +267,17 @@ void ModuleManager::updateModules()
                     Vector norm = object->readNormalize();
                     Log.Debug(F("acceleration: x=%d, y=%d, z=%d"CR), norm.XAxis, norm.YAxis, norm.ZAxis);
 
-                    Activites activ = object->readActivites();
-                    Log.Debug(F("activity: %T"CR), activ.isActivity);
+                    submitSensorValue(i, 0, CV_ACCELEROMETER_X, norm.XAxis);
+                    submitSensorValue(i, 0, CV_ACCELEROMETER_Y, norm.YAxis);
+                    submitSensorValue(i, 0, CV_ACCELEROMETER_Z, norm.ZAxis);
 
-                    Serial.println(norm.XAxis);
-                    Serial.println(norm.YAxis);
-                    Serial.println(norm.ZAxis);
+                    // If activity or inactivity detection is enabled, also submit motion sensor data
+                    if (object->getActivityX() || object->getInactivityX()) {
+                        Activites activ = object->readActivites();
+                        Log.Debug(F("activity: %T"CR), activ.isActivity || !activ.isInactivity);
 
-                    submitSensorValue(i, 0, V_TRIPPED, (bool) activ.isActivity);
-                    submitSensorValue(i, 1, CV_ACCELEROMETER_X, norm.XAxis);
-                    submitSensorValue(i, 1, CV_ACCELEROMETER_Y, norm.YAxis);
-                    submitSensorValue(i, 1, CV_ACCELEROMETER_Z, norm.ZAxis);
+                        submitSensorValue(i, 1, V_TRIPPED, activ.isActivity || !activ.isInactivity);
+                    }
                 }
 
                 break;
