@@ -127,7 +127,7 @@ The following configuration options are currently defined:
 
 External modules can be attached, mixed and matched to suit your needs.
 Examples of such modules are a sonar, accelerometer, humidity sensor, and so
-on. To configure modules, simply set use the configuration commands to insert
+on. To configure modules, simply use the configuration commands to insert
 module configuration into one of the available slots.
 
 The following modules are currently defined:
