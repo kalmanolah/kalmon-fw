@@ -40,9 +40,9 @@ eight-bit char. We have started defining custom value types starting from
 | Name | Value | Description |
 |------|-------|-------------|
 | CV_AVAILABLE_MEMORY | 128 | Available memory in bytes. |
-| CV_ACCELEROMETER_X | 129 | Accelerometer X value. |
-| CV_ACCELEROMETER_Y | 130 | Accelerometer Y value. |
-| CV_ACCELEROMETER_Z | 131 | Accelerometer Z value. |
+| CV_ACCELEROTION_X | 129 | Acceleration X value. |
+| CV_ACCELEROTION_Y | 130 | Acceleration Y value. |
+| CV_ACCELEROTION_Z | 131 | Acceleration Z value. |
 
 ### Node Information & Stats
 
@@ -122,6 +122,117 @@ The following configuration options are currently defined:
 | MODULE_6_CONFIGURATION | 29 | char[n] | NULL | Configuration for module #6. For more information, see the modules section. |
 | MODULE_7_CONFIGURATION | 30 | char[n] | NULL | Configuration for module #7. For more information, see the modules section. |
 | MODULE_8_CONFIGURATION | 31 | char[n] | NULL | Configuration for module #8. For more information, see the modules section. |
+
+## Modules
+
+External modules can be attached, mixed and matched to suit your needs.
+Examples of such modules are a sonar, accelerometer, humidity sensor, and so
+on. To configure modules, simply set use the configuration commands to insert
+module configuration into one of the available slots.
+
+The following modules are currently defined:
+
+### DHT11
+
+[DHT11 Digital Temperature Humidity Sensor Module](http://www.dx.com/p/arduino-digital-temperature-humidity-sensor-module-121350)
+
+Presented as humidity sensor `S_HUM` and temperature sensor `S_TEMP`,
+values sent as humidity value `V_HUM` and temperature value `V_TEMP`.
+
+#### Configuration
+
+```
+1,${pin}
+```
+
+#### Parameters
+
+* *pin*: digital input pin
+
+### HCSR04
+
+[HC-SR04 Ultrasonic Sensor Distance Measuring Module](http://www.dx.com/p/hc-sr04-ultrasonic-sensor-distance-measuring-module-133696)
+
+Presented as distance sensor `S_DISTANCE`, values sent as distance value
+`V_DISTANCE`.
+
+#### Configuration
+
+```
+2,${trig_pin},${echo_pin}
+```
+
+#### Parameters
+
+* *trig_pin*: trigger pin
+* *echo_pin*: echo pin
+
+### KY038
+
+[Keyes Microphone Sound Detection Sensor Module](http://www.dx.com/p/arduino-microphone-sound-detection-sensor-module-red-135533)
+
+Presented as custom sensor `S_CUSTOM`, values sent as var1 value `V_VAR1`.
+
+#### Configuration
+
+```
+3,${pin}
+```
+
+#### Parameters
+
+* *pin*: analog input pin
+
+#### Notes
+
+Not accurate at all. If I could go back in time, I wouldn't have bought 4.
+
+### MNEBPTCMN
+
+[Meeeno MN-EB-PTCMN Photosensitive Sensor Module](http://www.dx.com/p/meeeno-mn-eb-ptcmn-photosensitive-sensor-module-orange-202511)
+
+Presented as light level sensor `S_LIGHT_LEVEL`, values sent as light level
+value `V_LIGHT_LEVEL`.
+
+#### Configuration
+
+```
+4,${pin}
+```
+
+#### Parameters
+
+* *pin*: analog input pin
+
+#### Notes
+
+It's easy to get a reading, you just don't know how to scale that reading
+unless you perform some assisted calibration.
+
+### ADXL345
+
+[ADXL345 Digital 3-Axis Gravity Acceleration Sensor Module](http://www.dx.com/p/adxl345-digital-3-axis-gravity-acceleration-sensor-module-blue-149476)
+
+Presented as accelerometer sensor `CS_ACCELEROMETER`, values sent as
+acceleration values `CS_ACCELERATION_X`, `CS_ACCELERATION_Y` and
+`CS_ACCELERATION_Z`.
+
+If activity or inactivity detection are enabled, also presents a motion sensor
+`S_MOTION`, with values sent as tripped status `V_TRIPPED`.
+
+#### Configuration
+
+```
+`5,${activity_threshold},${inactivity_threshold},${inactivity_time}`
+```
+
+#### Parameters
+
+* *activity_threshold*: threshold (in G) for activity detection; enables
+  activity detection if not set to `0`
+* *inactivity_threshold*: threshold (in G) for inactivity detection; enables
+  inactivity detection if not set to `0`
+* *inactivity_time*: inactivity time; defaults to `5` if set to `0`
 
 [1]: http://www.mysensors.org/
 [2]: http://www.mysensors.org/controller/

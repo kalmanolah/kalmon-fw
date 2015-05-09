@@ -13,9 +13,9 @@
 
 // Custom value types
 #define CV_AVAILABLE_MEMORY 128
-#define CV_ACCELEROMETER_X 129
-#define CV_ACCELEROMETER_Y 130
-#define CV_ACCELEROMETER_Z 131
+#define CV_ACCELERATION_X 129
+#define CV_ACCELERATION_Y 130
+#define CV_ACCELERATION_Z 131
 
 #include "ModuleManager.h"
 

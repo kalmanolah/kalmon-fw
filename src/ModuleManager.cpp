@@ -77,7 +77,7 @@ void ModuleManager::registerModule(char* configuration)
                         module.object = malloc(sizeof(object));
                         memcpy(module.object, &object, sizeof(object));
 
-                        presentSensor(module_count, 0, S_DISTANCE);
+                        presentSensor(module_count, 0, S_CUSTOM);
                     }
                 }
 
@@ -267,9 +267,9 @@ void ModuleManager::updateModules()
                     Vector norm = object->readNormalize();
                     Log.Debug(F("acceleration: x=%d, y=%d, z=%d"CR), norm.XAxis, norm.YAxis, norm.ZAxis);
 
-                    submitSensorValue(i, 0, CV_ACCELEROMETER_X, norm.XAxis);
-                    submitSensorValue(i, 0, CV_ACCELEROMETER_Y, norm.YAxis);
-                    submitSensorValue(i, 0, CV_ACCELEROMETER_Z, norm.ZAxis);
+                    submitSensorValue(i, 0, CV_ACCELERATION_X, norm.XAxis);
+                    submitSensorValue(i, 0, CV_ACCELERATION_Y, norm.YAxis);
+                    submitSensorValue(i, 0, CV_ACCELERATION_Z, norm.ZAxis);
 
                     // If activity or inactivity detection is enabled, also submit motion sensor data
                     if (object->getActivityX() || object->getInactivityX()) {
