@@ -147,7 +147,9 @@ values sent as humidity value `V_HUM` and temperature value `V_TEMP`.
 
 #### Parameters
 
-* *pin*: digital input pin
+* *pin*:
+
+    * digital input pin
 
 ### HCSR04
 
@@ -164,8 +166,13 @@ Presented as distance sensor `S_DISTANCE`, values sent as distance value
 
 #### Parameters
 
-* *trig_pin*: trigger pin
-* *echo_pin*: echo pin
+* *trig_pin*:
+
+    * trigger pin
+
+* *echo_pin*:
+
+    *echo pin
 
 ### KY038
 
@@ -181,7 +188,9 @@ Presented as custom sensor `S_CUSTOM`, values sent as var1 value `V_VAR1`.
 
 #### Parameters
 
-* *pin*: analog input pin
+* *pin*:
+
+    * analog input pin
 
 #### Notes
 
@@ -202,7 +211,9 @@ value `V_LIGHT_LEVEL`.
 
 #### Parameters
 
-* *pin*: analog input pin
+* *pin*:
+
+    * analog input pin
 
 #### Notes
 
@@ -213,6 +224,8 @@ unless you perform some assisted calibration.
 
 [ADXL345 Digital 3-Axis Gravity Acceleration Sensor Module](http://www.dx.com/p/adxl345-digital-3-axis-gravity-acceleration-sensor-module-blue-149476)
 
+Additional documentation: [here](http://www.analog.com/media/en/technical-documentation/data-sheets/ADXL345.pdf)
+
 Presented as accelerometer sensor `CS_ACCELEROMETER`, values sent as
 acceleration values `CS_ACCELERATION_X`, `CS_ACCELERATION_Y` and
 `CS_ACCELERATION_Z`.
@@ -220,19 +233,63 @@ acceleration values `CS_ACCELERATION_X`, `CS_ACCELERATION_Y` and
 If activity or inactivity detection are enabled, also presents a motion sensor
 `S_MOTION`, with values sent as tripped status `V_TRIPPED`.
 
+Supports link mode, where activity interrupts are prevented until inactivity
+is detected, and vice versa.
+
+Supports an auto-sleep mode, where power consumption is reduced by a huge
+margin. Highly recommended for low-power projects.
+
 #### Configuration
 
 ```
-`5,${activity_threshold},${inactivity_threshold},${inactivity_time}`
+`5,${activity_threshold},${inactivity_threshold},${inactivity_time},${sensitivity_range},${data_rate},${power_mode}`
 ```
 
 #### Parameters
 
-* *activity_threshold*: threshold (in G) for activity detection; enables
-  activity detection if not set to `0`
-* *inactivity_threshold*: threshold (in G) for inactivity detection; enables
-  inactivity detection if not set to `0`
-* *inactivity_time*: inactivity time; defaults to `5` if set to `0`
+* *activity_threshold*:
+
+    * threshold (in G) for activity detection
+    * enables activity detection if not set to `0`
+
+* *inactivity_threshold*:
+
+    * threshold (in G) for inactivity detection
+    * enables inactivity detection if not set to `0`
+
+* *inactivity_time*:
+
+    * inactivity time
+    * required for inactivity detection
+    * defaults to `5` if set to `0`
+
+* *sensitivity_range*:
+
+    * configures the sensitivity
+    * contains the value sent to the `DATA_FORMAT` register
+    * highly recommended to read the additional documentation linked above
+    * currently not used
+
+* *data_rate*:
+
+    * configures the data rate
+    * contains the value sent to the `BW_RATE` register
+    * highly recommended to read the additional documentation linked above
+    * currently not used
+
+* *power_mode*:
+
+    * configures the power mode
+    * contains the value sent to the `POWER_CTL` register
+    * highly recommended to read the additional documentation linked above
+    * defaults to `0x08` / `8` (measurement mode)
+    * suggested values:
+
+        | Dec | Hex | Description |
+        |-----|-----|-------------|
+        | 8 | 0x08 | Measurement mode |
+        | 40 | 0x28 | Measurement mode + link mode |
+        | 56 | 0x38 | Measurement mode + link mode + auto-sleep mode |
 
 [1]: http://www.mysensors.org/
 [2]: http://www.mysensors.org/controller/

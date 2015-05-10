@@ -5,6 +5,7 @@
 
 #include <Logging.h>
 #include <Dht11.h>
+#include <Wire.h>
 #include <ADXL345.h>
 
 #include "Network.h"
@@ -34,6 +35,7 @@ class ModuleManager {
 
         static uint8_t module_count;
         static Module modules[MODULE_AVAILABLE_SLOTS];
+        static void writeRegister8(uint8_t address, uint8_t reg, uint8_t value);
 };
 
 #endif

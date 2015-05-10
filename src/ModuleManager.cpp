@@ -104,7 +104,7 @@ void ModuleManager::registerModule(char* configuration)
             #ifdef MODULE_TYPE_ADXL345
             case MODULE_TYPE_ADXL345:
                 {
-                    uint8_t options[3];
+                    uint8_t options[6];
                     uint8_t i;
 
                     // Load options
@@ -118,9 +118,6 @@ void ModuleManager::registerModule(char* configuration)
                         Log.Error(F("Error loading ADXL345"CR));
                     }
 
-                    // Set sensitivity
-                    object.setRange(ADXL345_RANGE_2G);
-
                     // Configure activity detection
                     if (options[0] > 0) {
                         object.setActivityXYZ(1);
@@ -133,13 +130,24 @@ void ModuleManager::registerModule(char* configuration)
                         object.setInactivityThreshold(options[1]);
                     }
 
+                    // Configure inactivity time
+                    object.setTimeInactivity(options[2] > 0 ? options[2] : 5);
+
+                    // Configure sensitivity
+                    object.setRange(/*options[3] > 0 ? options[3] :*/ ADXL345_RANGE_2G);
+
+                    // Configure data rate
+                    object.setDataRate(/*options[4] > 0 ? options[4] :*/ ADXL345_DATARATE_12_5HZ);
+
+                    // Configure power control mode
+                    // For link and auto-slide alongside measurements, use 0b00111000 / 0x38
+                    writeRegister8(ADXL345_ADDRESS, ADXL345_REG_POWER_CTL, options[5] > 0 ? options[5] : 0x08); // Default to measurement mode
+
                     // Present accelerometer
                     presentSensor(module_count, 0, CS_ACCELEROMETER);
 
-                    // If activity or inactivity detection are enabled, set the inactivity time
+                    // If activity or inactivity detection are enabled
                     if (options[0] > 0 || options[1] > 0) {
-                        object.setTimeInactivity(options[2] > 0 ? options[2] : 5);
-
                         // If activity or inactivity detection are enabled, present a motion sensor in addition
                         // to the accelerometer
                         presentSensor(module_count, 1, S_MOTION);
@@ -287,4 +295,15 @@ void ModuleManager::updateModules()
                 break;
         }
     }
+}
+
+/**
+ * Write a value to a register by register + address.
+ */
+void ModuleManager::writeRegister8(uint8_t address, uint8_t reg, uint8_t value)
+{
+    Wire.beginTransmission(address);
+    Wire.write(reg);
+    Wire.write(value);
+    Wire.endTransmission();
 }
