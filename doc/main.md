@@ -222,7 +222,7 @@ Presented as distance sensor `S_DISTANCE`, values sent as distance value
 
 * *echo_pin*:
 
-    *echo pin
+    * echo pin
 
 <a name="ky038"></a>
 ### KY038
