@@ -9,33 +9,33 @@ of open source domotics systems.
 
 ## Table of Contents
 
-<!-- MarkdownTOC depth=4 autoanchor=false autolink=true -->
+<!-- MarkdownTOC depth=4 autoanchor=false bracket=round autolink=true -->
 
-- [Agreements and Specifications][agreements-and-specifications]
-- [MySensor Serial Protocol Additions][mysensor-serial-protocol-additions]
-    - [Custom Sensor Types][custom-sensor-types]
-    - [Custom Value Types][custom-value-types]
-    - [Node Information & Stats][node-information--stats]
-- [Commands][commands]
-- [Configuration][configuration]
-- [Modules][modules]
-    - [DHT11][dht11]
-        - [Configuration][configuration-1]
-        - [Parameters][parameters]
-    - [HCSR04][hcsr04]
-        - [Configuration][configuration-2]
-        - [Parameters][parameters-1]
-    - [KY038][ky038]
-        - [Configuration][configuration-3]
-        - [Parameters][parameters-2]
-        - [Notes][notes]
-    - [MNEBPTCMN][mnebptcmn]
-        - [Configuration][configuration-4]
-        - [Parameters][parameters-3]
-        - [Notes][notes-1]
-    - [ADXL345][adxl345]
-        - [Configuration][configuration-5]
-        - [Parameters][parameters-4]
+- [Agreements and Specifications](#agreements-and-specifications)
+- [MySensor Serial Protocol Additions](#mysensor-serial-protocol-additions)
+    - [Custom Sensor Types](#custom-sensor-types)
+    - [Custom Value Types](#custom-value-types)
+    - [Node Information & Stats](#node-information--stats)
+- [Commands](#commands)
+- [Configuration](#configuration)
+- [Modules](#modules)
+    - [DHT11](#dht11)
+        - [Configuration](#configuration-1)
+        - [Parameters](#parameters)
+    - [HCSR04](#hcsr04)
+        - [Configuration](#configuration-2)
+        - [Parameters](#parameters-1)
+    - [KY038](#ky038)
+        - [Configuration](#configuration-3)
+        - [Parameters](#parameters-2)
+        - [Notes](#notes)
+    - [MNEBPTCMN](#mnebptcmn)
+        - [Configuration](#configuration-4)
+        - [Parameters](#parameters-3)
+        - [Notes](#notes-1)
+    - [ADXL345](#adxl345)
+        - [Configuration](#configuration-5)
+        - [Parameters](#parameters-4)
 
 <!-- /MarkdownTOC -->
 
