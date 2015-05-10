@@ -1,16 +1,11 @@
 Kalmon
 ======
 
-Kalmon is a configurable sensor hub package. It was created to be reusable,
-configurable and well-integrated with a fair amount of systems.
-
-Since Kalmon is built ontop of [MySensors][1], it should work with [a handful][2]
-of open source domotics systems.
-
 ## Table of Contents
 
-<!-- MarkdownTOC depth=4 autoanchor=false bracket=round autolink=true -->
+<!-- MarkdownTOC depth=4 autoanchor=true bracket=round autolink=true -->
 
+- [Introduction](#introduction)
 - [Agreements and Specifications](#agreements-and-specifications)
 - [MySensor Serial Protocol Additions](#mysensor-serial-protocol-additions)
     - [Custom Sensor Types](#custom-sensor-types)
@@ -39,10 +34,21 @@ of open source domotics systems.
 
 <!-- /MarkdownTOC -->
 
+<a name="introduction"></a>
+## Introduction
+
+Kalmon is a configurable sensor hub package. It was created to be reusable,
+configurable and well-integrated with a fair amount of systems.
+
+Since Kalmon is built ontop of [MySensors][1], it should work with [a handful][2]
+of open source domotics systems.
+
+<a name="agreements-and-specifications"></a>
 ## Agreements and Specifications
 
 * The serial baud rate is set to `115200`.
 
+<a name="mysensor-serial-protocol-additions"></a>
 ## MySensor Serial Protocol Additions
 
 This section describes additions to the MySensor Serial Protocol, for which
@@ -51,6 +57,7 @@ documentation can be found [here][3].
 Users and Integrators are encouraged to read the MySensors Serial Protocol
 documentation thoroughly before reading any further.
 
+<a name="custom-sensor-types"></a>
 ### Custom Sensor Types
 
 The MySensors Serial Protocol supports about thirty sensor types. These are
@@ -62,6 +69,7 @@ eight-bit char. We have started defining custom sensor types starting from
 |------|-------|-------------|
 | CS_ACCELEROMETER | 128 | Accelerometer. Added to support the ADXL-345 module. |
 
+<a name="custom-value-types"></a>
 ### Custom Value Types
 
 The MySensors Serial Protocol supports about fourty value types. These are
@@ -76,6 +84,7 @@ eight-bit char. We have started defining custom value types starting from
 | CV_ACCELEROTION_Y | 130 | Acceleration Y value. |
 | CV_ACCELEROTION_Z | 131 | Acceleration Z value. |
 
+<a name="node-information--stats"></a>
 ### Node Information & Stats
 
 A MySensors node has support for sending the battery level to the gateway.
@@ -107,6 +116,7 @@ Currently, the following node information and statistics are sent:
     Value           => 1064 # Available memory in bytes
     ```
 
+<a name="commands"></a>
 ## Commands
 
 A few commands can be executed, mostly related to debugging and configuration.
@@ -127,6 +137,7 @@ The following commands are currently defined:
 | 43 | `$cmd $key\n` | Get the value of a configuration variable |
 | 44 | `$cmd $key $value\n` | Set the value of a configuration variable |
 
+<a name="configuration"></a>
 ## Configuration
 
 A variety of different configuration options are supported which can be read
@@ -155,6 +166,7 @@ The following configuration options are currently defined:
 | MODULE_7_CONFIGURATION | 30 | char[n] | NULL | Configuration for module #7. For more information, see the modules section. |
 | MODULE_8_CONFIGURATION | 31 | char[n] | NULL | Configuration for module #8. For more information, see the modules section. |
 
+<a name="modules"></a>
 ## Modules
 
 External modules can be attached, mixed and matched to suit your needs.
@@ -164,6 +176,7 @@ module configuration into one of the available slots.
 
 The following modules are currently defined:
 
+<a name="dht11"></a>
 ### DHT11
 
 [DHT11 Digital Temperature Humidity Sensor Module](http://www.dx.com/p/arduino-digital-temperature-humidity-sensor-module-121350)
@@ -171,18 +184,21 @@ The following modules are currently defined:
 Presented as humidity sensor `S_HUM` and temperature sensor `S_TEMP`,
 values sent as humidity value `V_HUM` and temperature value `V_TEMP`.
 
+<a name="configuration-1"></a>
 #### Configuration
 
 ```
 1,${pin}
 ```
 
+<a name="parameters"></a>
 #### Parameters
 
 * *pin*:
 
     * digital input pin
 
+<a name="hcsr04"></a>
 ### HCSR04
 
 [HC-SR04 Ultrasonic Sensor Distance Measuring Module](http://www.dx.com/p/hc-sr04-ultrasonic-sensor-distance-measuring-module-133696)
@@ -190,12 +206,14 @@ values sent as humidity value `V_HUM` and temperature value `V_TEMP`.
 Presented as distance sensor `S_DISTANCE`, values sent as distance value
 `V_DISTANCE`.
 
+<a name="configuration-2"></a>
 #### Configuration
 
 ```
 2,${trig_pin},${echo_pin}
 ```
 
+<a name="parameters-1"></a>
 #### Parameters
 
 * *trig_pin*:
@@ -206,28 +224,33 @@ Presented as distance sensor `S_DISTANCE`, values sent as distance value
 
     *echo pin
 
+<a name="ky038"></a>
 ### KY038
 
 [Keyes Microphone Sound Detection Sensor Module](http://www.dx.com/p/arduino-microphone-sound-detection-sensor-module-red-135533)
 
 Presented as custom sensor `S_CUSTOM`, values sent as var1 value `V_VAR1`.
 
+<a name="configuration-3"></a>
 #### Configuration
 
 ```
 3,${pin}
 ```
 
+<a name="parameters-2"></a>
 #### Parameters
 
 * *pin*:
 
     * analog input pin
 
+<a name="notes"></a>
 #### Notes
 
 Not accurate at all. If I could go back in time, I wouldn't have bought 4.
 
+<a name="mnebptcmn"></a>
 ### MNEBPTCMN
 
 [Meeeno MN-EB-PTCMN Photosensitive Sensor Module](http://www.dx.com/p/meeeno-mn-eb-ptcmn-photosensitive-sensor-module-orange-202511)
@@ -235,23 +258,27 @@ Not accurate at all. If I could go back in time, I wouldn't have bought 4.
 Presented as light level sensor `S_LIGHT_LEVEL`, values sent as light level
 value `V_LIGHT_LEVEL`.
 
+<a name="configuration-4"></a>
 #### Configuration
 
 ```
 4,${pin}
 ```
 
+<a name="parameters-3"></a>
 #### Parameters
 
 * *pin*:
 
     * analog input pin
 
+<a name="notes-1"></a>
 #### Notes
 
 It's easy to get a reading, you just don't know how to scale that reading
 unless you perform some assisted calibration.
 
+<a name="adxl345"></a>
 ### ADXL345
 
 [ADXL345 Digital 3-Axis Gravity Acceleration Sensor Module](http://www.dx.com/p/adxl345-digital-3-axis-gravity-acceleration-sensor-module-blue-149476)
@@ -271,12 +298,14 @@ is detected, and vice versa.
 Supports an auto-sleep mode, where power consumption is reduced by a huge
 margin. Highly recommended for low-power projects.
 
+<a name="configuration-5"></a>
 #### Configuration
 
 ```
 5,${activity_threshold},${inactivity_threshold},${inactivity_time},${sensitivity_range},${data_rate},${power_mode}
 ```
 
+<a name="parameters-4"></a>
 #### Parameters
 
 * *activity_threshold*:
