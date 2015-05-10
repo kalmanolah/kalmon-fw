@@ -80,9 +80,9 @@ eight-bit char. We have started defining custom value types starting from
 | Name | Value | Description |
 |------|-------|-------------|
 | CV_AVAILABLE_MEMORY | 128 | Available memory in bytes. |
-| CV_ACCELEROTION_X | 129 | Acceleration X value. |
-| CV_ACCELEROTION_Y | 130 | Acceleration Y value. |
-| CV_ACCELEROTION_Z | 131 | Acceleration Z value. |
+| CV_ACCELERATION_X | 129 | Acceleration X value. |
+| CV_ACCELERATION_Y | 130 | Acceleration Y value. |
+| CV_ACCELERATION_Z | 131 | Acceleration Z value. |
 
 <a name="node-information--stats"></a>
 ### Node Information & Stats
