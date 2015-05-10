@@ -242,7 +242,7 @@ margin. Highly recommended for low-power projects.
 #### Configuration
 
 ```
-`5,${activity_threshold},${inactivity_threshold},${inactivity_time},${sensitivity_range},${data_rate},${power_mode}`
+5,${activity_threshold},${inactivity_threshold},${inactivity_time},${sensitivity_range},${data_rate},${power_mode}
 ```
 
 #### Parameters
