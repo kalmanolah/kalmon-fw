@@ -118,6 +118,10 @@ void ModuleManager::registerModule(char* configuration)
                         Log.Error(F("Error loading ADXL345"CR));
                     }
 
+                    // Configure power control mode
+                    // For link and auto-slide alongside measurements, use 0b00111000 / 0x38
+                    // writeRegister8(ADXL345_ADDRESS, ADXL345_REG_POWER_CTL, options[5] > 0 ? options[5] : 0x08); // Default to measurement mode
+
                     // Configure activity detection
                     if (options[0] > 0) {
                         object.setActivityXYZ(1);
@@ -137,24 +141,23 @@ void ModuleManager::registerModule(char* configuration)
                     object.setRange(/*options[3] > 0 ? options[3] :*/ ADXL345_RANGE_2G);
 
                     // Configure data rate
-                    object.setDataRate(/*options[4] > 0 ? options[4] :*/ ADXL345_DATARATE_12_5HZ);
-
-                    // Configure power control mode
-                    // For link and auto-slide alongside measurements, use 0b00111000 / 0x38
-                    writeRegister8(ADXL345_ADDRESS, ADXL345_REG_POWER_CTL, options[5] > 0 ? options[5] : 0x08); // Default to measurement mode
+                    object.setDataRate(/*options[4] > 0 ? options[4] :*/ ADXL345_DATARATE_100HZ);
 
                     // Present accelerometer
                     presentSensor(module_count, 0, CS_ACCELEROMETER);
 
-                    // If activity or inactivity detection are enabled
+                    // If activity or inactivity detection is enabled
                     if (options[0] > 0 || options[1] > 0) {
-                        // If activity or inactivity detection are enabled, present a motion sensor in addition
+                        // If activity detection is enabled, present a motion sensor in addition
                         // to the accelerometer
                         presentSensor(module_count, 1, S_MOTION);
                     }
 
                     // Set correct interrupt to use
                     object.useInterrupt(ADXL345_INT1);
+
+                    // Bind interrupt
+                    // attachInterrupt(1, onADXL345Interrupt, CHANGE);
 
                     module.object = malloc(sizeof(object));
                     memcpy(module.object, &object, sizeof(object));
@@ -282,9 +285,9 @@ void ModuleManager::updateModules()
                     // If activity or inactivity detection is enabled, also submit motion sensor data
                     if (object->getActivityX() || object->getInactivityX()) {
                         Activites activ = object->readActivites();
-                        Log.Debug(F("activity: %T"CR), activ.isActivity || !activ.isInactivity);
+                        Log.Debug(F("activity: %T"CR), activ.isActivity && !activ.isInactivity);
 
-                        submitSensorValue(i, 1, V_TRIPPED, activ.isActivity || !activ.isInactivity);
+                        submitSensorValue(i, 1, V_TRIPPED, activ.isActivity && !activ.isInactivity);
                     }
                 }
 
@@ -297,13 +300,29 @@ void ModuleManager::updateModules()
     }
 }
 
-/**
- * Write a value to a register by register + address.
- */
-void ModuleManager::writeRegister8(uint8_t address, uint8_t reg, uint8_t value)
-{
-    Wire.beginTransmission(address);
-    Wire.write(reg);
-    Wire.write(value);
-    Wire.endTransmission();
-}
+// /**
+//  * Write a value to a register by register + address.
+//  */
+// void ModuleManager::writeRegister8(uint8_t address, uint8_t reg, uint8_t value)
+// {
+//     Wire.beginTransmission(address);
+//     Wire.write(reg);
+//     Wire.write(value);
+//     Wire.endTransmission();
+// }
+
+// void ModuleManager::onADXL345Interrupt()
+// {
+//         Serial.println("interrupted");
+
+//     for (int i = 0; i < MODULE_AVAILABLE_SLOTS; i++) {
+//         if (!modules[i].type || modules[i].type != MODULE_TYPE_ADXL345) {
+//             continue;
+//         }
+
+//         Serial.println("interrupted");
+
+//         ADXL345* object = reinterpret_cast<ADXL345*>(modules[i].object);
+//         Activites activ = object->readActivites();
+//     }
+// }
