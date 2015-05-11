@@ -26,6 +26,7 @@ class ModuleManager {
     public:
         static void registerModule(char*);
         static void updateModules();
+        // static void onADXL345Interrupt();
 
     private:
         struct Module {
@@ -36,7 +37,6 @@ class ModuleManager {
         static uint8_t module_count;
         static Module modules[MODULE_AVAILABLE_SLOTS];
         static void writeRegister8(uint8_t address, uint8_t reg, uint8_t value);
-        // static void onADXL345Interrupt();
 };
 
 #endif
