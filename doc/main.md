@@ -182,6 +182,7 @@ the rest of the bits specifying the interrupt modes. The values that can be
 used are outlined below:
 
 |   | Bit 4 | Bit 0 |
+|---|-------|-------|
 | Enable `INT0` | Any | 1 |
 | Enable `INT1` | 1 | Any |
 
