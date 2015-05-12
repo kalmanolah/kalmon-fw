@@ -181,12 +181,12 @@ bit 0 enabling the `INT0` interrupt, bit 1 enabling the `INT1` interrupt, and
 the rest of the bits specifying the interrupt modes. The values that can be
 used are outlined below:
 
-|  | Bit 4 | Bit 0 |
+|   | Bit 4 | Bit 0 |
 | Enable `INT0` | Any | 1 |
 | Enable `INT1` | 1 | Any |
 
-|  | Bit 7 / Bit 3 | Bit 6 / Bit 2 | Bit 5 / Bit 1 |
-|--|-------|-------|-------|
+|   | Bit 7 / Bit 3 | Bit 6 / Bit 2 | Bit 5 / Bit 1 |
+|---|-------|-------|-------|
 | Mode `LOW` | 0 | 0 | 0 |
 | Mode `CHANGE` | 0 | 0 | 1 |
 | Mode `FALLING` | 0 | 1 | 0 |
