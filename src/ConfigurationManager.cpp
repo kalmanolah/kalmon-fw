@@ -16,7 +16,7 @@ ConfigurationManager::Configuration ConfigurationManager::data = {
         15,    // sensor update interval
         25,    // awake duration
         1800,  // sleep duration
-        0      // node address
+        0      // sleep options
     },
     {
 

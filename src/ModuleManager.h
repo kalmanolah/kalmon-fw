@@ -26,7 +26,6 @@ class ModuleManager {
     public:
         static void registerModule(char*);
         static void updateModules();
-        // static void onADXL345Interrupt();
 
     private:
         struct Module {

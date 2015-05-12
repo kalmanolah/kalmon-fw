@@ -13,6 +13,7 @@ Kalmon
     - [Node Information & Stats](#node-information--stats)
 - [Commands](#commands)
 - [Configuration](#configuration)
+- [Power savings](#power-savings)
 - [Modules](#modules)
     - [DHT11](#dht11)
         - [Configuration](#configuration-1)
@@ -157,6 +158,7 @@ The following configuration options are currently defined:
 | SENSOR_UPDATE_INTERVAL | 11 | uint16_t | 15 | Interval between sensor updates, in seconds. If set to `0`, disables sensor updates. If the device is woken from sleep, the sensor update timer is reset, meaning the interval time has to pass every time the device wakes up before a sensor update is sent. |
 | AWAKE_DURATION | 12 | uint16_t | 25 | How long the device should stay awake, in seconds. This setting only matters if `SLEEP_DURATION` is also set. |
 | SLEEP_DURATION | 13 | uint16_t | 1800 | How long the device should remain asleep, in seconds. If set to `0` disables sleeping. |
+| SLEEP_OPTIONS | 14 | uint16_t | 0 | Sleep mode options, mainly for power saving. This value is a bitmask. See the power saving section. |
 | MODULE_1_CONFIGURATION | 24 | char[n] | NULL | Configuration for module #1. For more information, see the modules section. |
 | MODULE_2_CONFIGURATION | 25 | char[n] | NULL | Configuration for module #2. For more information, see the modules section. |
 | MODULE_3_CONFIGURATION | 26 | char[n] | NULL | Configuration for module #3. For more information, see the modules section. |
@@ -165,6 +167,34 @@ The following configuration options are currently defined:
 | MODULE_6_CONFIGURATION | 29 | char[n] | NULL | Configuration for module #6. For more information, see the modules section. |
 | MODULE_7_CONFIGURATION | 30 | char[n] | NULL | Configuration for module #7. For more information, see the modules section. |
 | MODULE_8_CONFIGURATION | 31 | char[n] | NULL | Configuration for module #8. For more information, see the modules section. |
+
+<a name="power-savings"></a>
+## Power savings
+
+Intervals and durations for sensor updates, sleeping and being awake can be
+configured using the `SENSOR_UPDATE_INTERVAL`, `SLEEP_DURATION` and
+`AWAKE_DURATION` options, respectively.
+
+External interrupts can be used to wake the device, if required. These can be
+configured using the `SLEEP_OPTIONS` option. The value here is a bitmask, with
+bit 0 enabling the `INT0` interrupt, bit 1 enabling the `INT1` interrupt, and
+the rest of the bits specifying the interrupt modes. The values that can be
+used are outlined below:
+
+|  | Bit 4 | Bit 0 |
+| Enable `INT0` | Any | 1 |
+| Enable `INT1` | 1 | Any |
+
+|  | Bit 7 / Bit 3 | Bit 6 / Bit 2 | Bit 5 / Bit 1 |
+|--|-------|-------|-------|
+| Mode `LOW` | 0 | 0 | 0 |
+| Mode `CHANGE` | 0 | 0 | 1 |
+| Mode `FALLING` | 0 | 1 | 0 |
+| Mode `RISING` | 0 | 1 | 1 |
+
+To maximize power conservation, one can set the option `SLEEP_DURATION` to `0`
+when enabling external interrupts. This will cause the device to only be woken
+by the configured interrupts.
 
 <a name="modules"></a>
 ## Modules
@@ -310,12 +340,12 @@ margin. Highly recommended for low-power projects.
 
 * *activity_threshold*:
 
-    * threshold (in G) for activity detection
+    * threshold (6.25mg / LSB) for activity detection
     * enables activity detection if not set to `0`
 
 * *inactivity_threshold*:
 
-    * threshold (in G) for inactivity detection
+    * threshold (6.55mg / LSB) for inactivity detection
     * enables inactivity detection if not set to `0`
 
 * *inactivity_time*:

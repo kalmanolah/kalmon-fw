@@ -108,7 +108,7 @@ void ModuleManager::registerModule(char* configuration)
                     uint8_t i;
 
                     // Load options
-                    for (i = 0; i < 3; i++) {
+                    for (i = 0; i < 6; i++) {
                         options[i] = strtol(strsep(&string, ","), NULL, 10);
                     }
 
@@ -122,19 +122,19 @@ void ModuleManager::registerModule(char* configuration)
                     // For link and auto-slide alongside measurements, use 0b00111000 / 0x38
                     // writeRegister8(ADXL345_ADDRESS, ADXL345_REG_POWER_CTL, 0x00);
                     writeRegister8(ADXL345_ADDRESS, ADXL345_REG_POWER_CTL, options[5] > 0 ? options[5] : 0x08); // Default to measurement mode
-                    writeRegister8(ADXL345_ADDRESS, ADXL345_REG_FIFO_CTL, /*0b10000000*/ 0x80);
+                    writeRegister8(ADXL345_ADDRESS, ADXL345_REG_FIFO_CTL, /*0b10000000*/ 0x80); // Enable FIFO streaming mode
                     // writeRegister8(ADXL345_ADDRESS, ADXL345_REG_POWER_CTL, /*0b00111000*/ 0x38);
 
                     // Configure activity detection
                     if (options[0] > 0) {
                         object.setActivityXYZ(1);
-                        object.setActivityThreshold(options[0]);
+                        object.setActivityThreshold(((float) options[0]) / 10);
                     }
 
                     // Configure inactivity detection
                     if (options[1] > 0) {
                         object.setInactivityXYZ(1);
-                        object.setInactivityThreshold(options[1]);
+                        object.setInactivityThreshold(((float) options[1]) / 10);
                     }
 
                     // Configure inactivity time
@@ -147,7 +147,13 @@ void ModuleManager::registerModule(char* configuration)
                     object.setDataRate(/*options[4] > 0 ? options[4] :*/ ADXL345_DATARATE_100HZ);
 
                     // Set correct interrupt to use
-                    object.useInterrupt(ADXL345_INT2);
+                    object.useInterrupt(ADXL345_INT1);
+
+                    // Only enable the activity and inactivity interrupts
+                    writeRegister8(ADXL345_ADDRESS, ADXL345_REG_INT_ENABLE, 0b00011000);
+
+                    // Map activity interrupt to int1, inactivity interrupt to int2
+                    writeRegister8(ADXL345_ADDRESS, ADXL345_REG_INT_MAP, 0b00001000);
 
                     // Present accelerometer
                     presentSensor(module_count, 0, CS_ACCELEROMETER);
@@ -158,9 +164,6 @@ void ModuleManager::registerModule(char* configuration)
                         // to the accelerometer
                         presentSensor(module_count, 1, S_MOTION);
                     }
-
-                    // Bind interrupt
-                    // attachInterrupt(1, onADXL345Interrupt, RISING);
 
                     module.object = malloc(sizeof(object));
                     memcpy(module.object, &object, sizeof(object));
@@ -278,7 +281,16 @@ void ModuleManager::updateModules()
                 {
                     ADXL345* object = reinterpret_cast<ADXL345*>(modules[i].object);
 
-                    Vector norm = object->readNormalize();
+                    Vector norm = object->readScaled();
+                    Activites activ = object->readActivites();
+
+                    // If both activity and inactivity interrupts are detected,
+                    // keep reading until data stabilises
+                    while (activ.isActivity && activ.isInactivity) {
+                        norm = object->readScaled();
+                        activ = object->readActivites();
+                    }
+
                     Log.Debug(F("acceleration: x=%d, y=%d, z=%d"CR), norm.XAxis, norm.YAxis, norm.ZAxis);
 
                     submitSensorValue(i, 0, CV_ACCELERATION_X, norm.XAxis);
@@ -287,22 +299,21 @@ void ModuleManager::updateModules()
 
                     // If activity or inactivity detection is enabled, also submit motion sensor data
                     if (object->getActivityX() || object->getInactivityX()) {
-                        Activites activ = object->readActivites();
-                        Log.Debug(F("activity: %T"CR), activ.isActivity && !activ.isInactivity);
+
+                        Log.Debug(
+                            F("act: %t, in_act: %t, over: %t, mark: %t, fall: %t, dbl_tap: %t, tap: %t, rdy: %t"CR),
+                            activ.isActivity,
+                            activ.isInactivity,
+                            activ.isOverrun,
+                            activ.isWatermark,
+                            activ.isFreeFall,
+                            activ.isDoubleTap,
+                            activ.isTap,
+                            activ.isDataReady
+                        );
 
                         submitSensorValue(i, 1, V_TRIPPED, activ.isActivity && !activ.isInactivity);
                     }
-
-                    // Serial.println("sleepy");
-                    // delay(200);
-                    // pinMode(3, INPUT);
-                    // int retval = gateway.sleep(1, RISING, 0);
-
-                    // if (retval) {
-                    //     onADXL345Interrupt();
-                    // }
-                    // delay(200);
-                    // Serial.println("wakey");
                 }
 
                 break;
@@ -324,30 +335,3 @@ void ModuleManager::writeRegister8(uint8_t address, uint8_t reg, uint8_t value)
     Wire.write(value);
     Wire.endTransmission();
 }
-
-// void ModuleManager::onADXL345Interrupt()
-// {
-//     Serial.println("interrupt");
-
-//     for (int i = 0; i < MODULE_AVAILABLE_SLOTS; i++) {
-//         if (!modules[i].type) {
-//             continue;
-//         }
-
-//         switch (modules[i].type) {
-//             #ifdef MODULE_TYPE_ADXL345
-//             case MODULE_TYPE_ADXL345:
-//                 {
-//                     ADXL345* object = reinterpret_cast<ADXL345*>(modules[i].object);
-
-//                     Activites activ = object->readActivites();
-//                 }
-
-//                 break;
-//             #endif
-
-//             default:
-//                 break;
-//         }
-//     }
-// }
