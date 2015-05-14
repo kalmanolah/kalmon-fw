@@ -158,7 +158,7 @@ The following configuration options are currently defined:
 | SENSOR_UPDATE_INTERVAL | 11 | uint16_t | 15 | Interval between sensor updates, in seconds. If set to `0`, disables sensor updates. If the device is woken from sleep, the sensor update timer is reset, meaning the interval time has to pass every time the device wakes up before a sensor update is sent. |
 | AWAKE_DURATION | 12 | uint16_t | 25 | How long the device should stay awake, in seconds. This setting only matters if `SLEEP_DURATION` is also set. |
 | SLEEP_DURATION | 13 | uint16_t | 1800 | How long the device should remain asleep, in seconds. If set to `0` disables sleeping. |
-| SLEEP_OPTIONS | 14 | uint16_t | 0 | Sleep mode options, mainly for power saving. This value is a bitmask. See the power saving section. |
+| INTERRUPT_OPTIONS | 14 | uint16_t | 0 | Interrupt configuration, mainly for power saving. This value is a bitmask. See the power savings section. |
 | MODULE_1_CONFIGURATION | 24 | char[n] | NULL | Configuration for module #1. For more information, see the modules section. |
 | MODULE_2_CONFIGURATION | 25 | char[n] | NULL | Configuration for module #2. For more information, see the modules section. |
 | MODULE_3_CONFIGURATION | 26 | char[n] | NULL | Configuration for module #3. For more information, see the modules section. |
@@ -176,10 +176,10 @@ configured using the `SENSOR_UPDATE_INTERVAL`, `SLEEP_DURATION` and
 `AWAKE_DURATION` options, respectively.
 
 External interrupts can be used to wake the device, if required. These can be
-configured using the `SLEEP_OPTIONS` option. The value here is a bitmask, with
-bit 0 enabling the `INT0` interrupt, bit 1 enabling the `INT1` interrupt, and
-the rest of the bits specifying the interrupt modes. The values that can be
-used are outlined below:
+configured using the `INTERRUPT_OPTIONS` option. The value here is a bitmask,
+with bit 0 enabling the `INT0` interrupt, bit 1 enabling the `INT1` interrupt,
+and the rest of the bits specifying the interrupt modes. The values that can
+be used are outlined below:
 
 |   | Bit 4 | Bit 0 |
 |---|-------|-------|

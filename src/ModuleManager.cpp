@@ -327,6 +327,8 @@ void ModuleManager::updateModules()
 
 /**
  * Write a value to a register by register + address.
+ *
+ * @return void
  */
 void ModuleManager::writeRegister8(uint8_t address, uint8_t reg, uint8_t value)
 {

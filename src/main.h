@@ -46,16 +46,22 @@ static struct {
 static elapsedMillis sensor_update_elapsed;
 static elapsedMillis power_state_elapsed;
 
+static bool interrupt = false;
+
 void initLogging();
 void initCommands();
 void initConfiguration();
 void initConnection();
 void initModules();
+void initInterrupts();
 
 void handlePowerState();
 void handleSerialInput();
 void handleSensorUpdates();
 void handleConnection();
+
+void onInterrupt();
+void handleInterrupt();
 
 int getFreeMemory();
 uint8_t getBatteryLevel();

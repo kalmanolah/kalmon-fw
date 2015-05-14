@@ -15,6 +15,7 @@ void setup()
     initLogging();
     initConnection();
     initCommands();
+    initInterrupts();
     initModules();
 }
 
@@ -29,6 +30,10 @@ void loop()
 
     handleSensorUpdates();
     handlePowerState();
+
+    if (interrupt) {
+        handleInterrupt();
+    }
 
     gateway.wait(cfg::getInteger(CFG_LOOP_DELAY));
 }
@@ -113,6 +118,30 @@ void initModules()
 }
 
 /**
+ * Initialize interrupt logic.
+ *
+ * @return void
+ */
+void initInterrupts()
+{
+    uint8_t int_options;
+    uint8_t int0_options;
+    uint8_t int1_options;
+
+    int_options = cfg::getInteger(CFG_POWER_INTERRUPT_OPTIONS);
+    int0_options = (int_options & 0b1110) >> 1; // Bit 2 - Bit 4 contain the mode
+    int1_options = (int_options & 0b11100000) >> 5; // Bit 5 - Bit 7 contain the mode
+
+    if (int_options & POWER_INT0_ENABLED) {
+        attachInterrupt(0, onInterrupt, int0_options);
+    }
+
+    if (int_options & POWER_INT1_ENABLED) {
+        attachInterrupt(1, onInterrupt, int1_options);
+    }
+}
+
+/**
  * Determine whether or not sleeping is necessary and if so, initiate the sleep
  * sequence.
  *
@@ -120,33 +149,37 @@ void initModules()
  */
 void handlePowerState() {
     uint32_t sleep_duration;
-    uint8_t sleep_options;
+    uint8_t int_options;
     uint8_t int0_options;
     uint8_t int1_options;
+    uint8_t retval;
 
     // If we have a waking period and it has expired, go to sleep
     if (current_power_state == PowerState::AWAKE
         && cfg::getInteger(CFG_POWER_WAKE_DURATION) > 0
-        && ((cfg::getInteger(CFG_POWER_SLEEP_DURATION) > 0) || ((cfg::getInteger(CFG_POWER_SLEEP_OPTIONS) & POWER_INT0_INT1_ENABLED) > 0))
+        && ((cfg::getInteger(CFG_POWER_SLEEP_DURATION) > 0) || ((cfg::getInteger(CFG_POWER_INTERRUPT_OPTIONS) & POWER_INT0_INT1_ENABLED) > 0))
         && (power_state_elapsed / 1000) >= cfg::getInteger(CFG_POWER_WAKE_DURATION)) {
         Log.Debug(F("pwr: sleeping"CR));
         gateway.wait(200);
 
         sleep_duration = (uint32_t) cfg::getInteger(CFG_POWER_SLEEP_DURATION) * 1000;
-        sleep_options = cfg::getInteger(CFG_POWER_SLEEP_OPTIONS);
-        int0_options = (sleep_options & 0b1110) >> 1; // Bit 2 - Bit 4 contain the mode
-        int1_options = (sleep_options & 0b11100000) >> 5; // Bit 5 - Bit 7 contain the mode
+        int_options = cfg::getInteger(CFG_POWER_INTERRUPT_OPTIONS);
+        int0_options = (int_options & 0b1110) >> 1; // Bit 2 - Bit 4 contain the mode
+        int1_options = (int_options & 0b11100000) >> 5; // Bit 5 - Bit 7 contain the mode
 
         // Set the power state to asleep, since this function could've been called
         // using a serial command
         current_power_state = PowerState::ASLEEP;
 
-        if ((sleep_options & POWER_INT0_INT1_ENABLED) == POWER_INT0_INT1_ENABLED) {
-            gateway.sleep(0, int0_options, 1, int1_options, sleep_duration);
-        } else if (sleep_options & POWER_INT0_ENABLED) {
-            gateway.sleep(0, int0_options, sleep_duration);
-        } else if (sleep_options & POWER_INT1_ENABLED) {
-            gateway.sleep(1, int1_options, sleep_duration);
+        if ((int_options & POWER_INT0_INT1_ENABLED) == POWER_INT0_INT1_ENABLED) {
+            retval = gateway.sleep(0, int0_options, 1, int1_options, sleep_duration);
+            interrupt = retval != -1;
+        } else if (int_options & POWER_INT0_ENABLED) {
+            retval = gateway.sleep(0, int0_options, sleep_duration);
+            interrupt = retval == true;
+        } else if (int_options & POWER_INT1_ENABLED) {
+            retval = gateway.sleep(1, int1_options, sleep_duration);
+            interrupt = retval == true;
         } else {
             gateway.sleep(sleep_duration);
         }
@@ -156,6 +189,9 @@ void handlePowerState() {
         // Reset all counting timers after a wakeup
         power_state_elapsed = 0;
         sensor_update_elapsed = 0;
+
+        // Re-initialize interrupts after a wakeup
+        initInterrupts();
 
         Log.Debug(F("pwr: waking"CR));
     }
@@ -372,4 +408,27 @@ void setConfigurationValue(char* args) {
             }
         }
     }
+}
+
+/**
+ * Triggered on interrupt.
+ *
+ * @return void
+ */
+void onInterrupt()
+{
+    interrupt = true;
+}
+
+/**
+ * Handles an interrupt.
+ *
+ * @return void
+ */
+void handleInterrupt()
+{
+    // Trigger a sensor update
+    mod::updateModules();
+
+    interrupt = false;
 }
