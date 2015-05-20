@@ -108,7 +108,7 @@ void ModuleManager::registerModule(char* configuration)
                     uint8_t i;
 
                     // Load options
-                    for (i = 0; i < 6; i++) {
+                    for (i = 0; i < sizeof(options); i++) {
                         options[i] = strtol(strsep(&string, ","), NULL, 10);
                     }
 
@@ -167,6 +167,42 @@ void ModuleManager::registerModule(char* configuration)
 
                     module.object = malloc(sizeof(object));
                     memcpy(module.object, &object, sizeof(object));
+                }
+
+                break;
+            #endif
+
+            #ifdef MODULE_TYPE_GENERIC_VOLTAGE
+            case MODULE_TYPE_GENERIC_VOLTAGE:
+                {
+                    uint8_t pin;
+                    uint8_t sample_count;
+                    float coefficient;
+
+                    pin = strtol(strsep(&string, ","), NULL, 10);
+
+                    if (pin > 0) {
+                        // Load options
+                        sample_count = strtol(strsep(&string, ","), NULL, 10);
+
+                        if (!sample_count) {
+                            sample_count = 1;
+                        }
+
+                        // Load coefficient
+                        coefficient = strtod(strsep(&string, ","), NULL);
+
+                        if (!coefficient) {
+                            coefficient = 1.0;
+                        }
+
+                        GenericVoltage object = GenericVoltage(pin, sample_count, coefficient);
+
+                        module.object = malloc(sizeof(object));
+                        memcpy(module.object, &object, sizeof(object));
+
+                        presentSensor(module_count, 0, S_POWER);
+                    }
                 }
 
                 break;
@@ -314,6 +350,19 @@ void ModuleManager::updateModules()
 
                         submitSensorValue(i, 1, V_TRIPPED, activ.isActivity && !activ.isInactivity);
                     }
+                }
+
+                break;
+            #endif
+
+            #ifdef MODULE_TYPE_GENERIC_VOLTAGE
+            case MODULE_TYPE_GENERIC_VOLTAGE:
+                {
+                    GenericVoltage* object = reinterpret_cast<GenericVoltage*>(modules[i].object);
+                    object->read();
+                    // Log.Debug(F("voltage: %d"CR), object->getLevel());
+
+                    submitSensorValue(i, 0, V_VOLTAGE, object->getLevel());
                 }
 
                 break;

@@ -32,6 +32,9 @@ Kalmon
     - [ADXL345](#adxl345)
         - [Configuration](#configuration-5)
         - [Parameters](#parameters-4)
+    - [Generic Voltage](#generic-voltage)
+        - [Configuration](#configuration-6)
+        - [Parameters](#parameters-5)
 
 <!-- /MarkdownTOC -->
 
@@ -382,6 +385,36 @@ margin. Highly recommended for low-power projects.
         | 8 | 0x08 | Measurement mode |
         | 40 | 0x28 | Measurement mode + link mode |
         | 56 | 0x38 | Measurement mode + link mode + auto-sleep mode |
+
+<a name="generic-voltage"></a>
+### Generic Voltage
+
+This module setting can be used to measure generic analog voltages.hnical-documentation/data-sheets/ADXL345.pdf)
+
+Presented as power sensor `S_POWER`, values sent as voltage value `V_VOLTAGE`.
+
+Supports setting a coefficient, as well as setting the number of samples.
+
+<a name="configuration-6"></a>
+#### Configuration
+
+```
+6,${sample_count},${coefficient}
+```
+
+<a name="parameters-5"></a>
+#### Parameters
+
+* *sample_count*:
+
+    * amount of samples to take
+    * defaults to `1` if set to `0`
+
+* *coefficient*:
+
+    * number (float) to multiply the resulting voltage by
+    * recommended for those using voltage dividers to measure larger voltages
+    * defaults to `1.0` if set to `0`
 
 [1]: http://www.mysensors.org/
 [2]: http://www.mysensors.org/controller/

@@ -12,6 +12,7 @@
 #include "Sensor/HCSR04.h"
 #include "Sensor/KY038.h"
 #include "Sensor/MNEBPTCMN.h"
+#include "Sensor/GenericVoltage.h"
 
 #define MODULE_AVAILABLE_SLOTS 8
 #define MODULE_SENSORS_PER_MODULE 5
@@ -21,6 +22,8 @@
 #define MODULE_TYPE_KY038 3
 #define MODULE_TYPE_MNEBPTCMN 4
 #define MODULE_TYPE_ADXL345 5
+#define MODULE_TYPE_GENERIC_VOLTAGE 6
+
 
 class ModuleManager {
     public:

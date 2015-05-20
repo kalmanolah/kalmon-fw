@@ -103,6 +103,7 @@ char* ConfigurationManager::getString(uint8_t key) {
  */
 void ConfigurationManager::setBoolean(uint8_t key, bool value) {
     data.booleans[key - CONFIG_BOOLEANS_OFFSET] = value;
+    save();
 }
 
 /**
@@ -112,6 +113,7 @@ void ConfigurationManager::setBoolean(uint8_t key, bool value) {
  */
 void ConfigurationManager::setInteger(uint8_t key, uint16_t value) {
     data.integers[key - CONFIG_INTEGERS_OFFSET] = value;
+    save();
 }
 
 /**
@@ -121,4 +123,5 @@ void ConfigurationManager::setInteger(uint8_t key, uint16_t value) {
  */
 void ConfigurationManager::setString(uint8_t key, char* value) {
     strcpy(data.strings[key - CONFIG_STRINGS_OFFSET], value);
+    save();
 }
