@@ -389,7 +389,7 @@ margin. Highly recommended for low-power projects.
 <a name="generic-voltage"></a>
 ### Generic Voltage
 
-This module setting can be used to measure generic analog voltages.hnical-documentation/data-sheets/ADXL345.pdf)
+This module setting can be used to measure generic analog voltages.
 
 Presented as power sensor `S_POWER`, values sent as voltage value `V_VOLTAGE`.
 
