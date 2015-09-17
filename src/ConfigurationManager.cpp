@@ -10,13 +10,14 @@ ConfigurationManager::Configuration ConfigurationManager::data = {
         true   // debug
     },
     {
-        250,   // loop delay
+        50,    // loop delay
         9600,  // serial baud rate
         32,    // serial input buffer size
         15,    // sensor update interval
         25,    // awake duration
         1800,  // sleep duration
-        0      // interrupt options
+        0,     // interrupt options
+        10     // default node address
     },
     {
 
